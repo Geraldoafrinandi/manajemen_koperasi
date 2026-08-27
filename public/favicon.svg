@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100">
+  <!-- Outer Square 1 -->
+  <rect x="15" y="15" width="70" height="70" rx="4" stroke="#065f46" stroke-width="7" fill="#ffffff" />
+  <!-- Rotated Square 2 (45 deg) -->
+  <rect x="15" y="15" width="70" height="70" rx="4" transform="rotate(45 50 50)" stroke="#047857" stroke-width="7" fill="#ffffff" />
+  <!-- Inner Green Overlapping Lines -->
+  <polygon points="50,22 58,36 74,36 62,46 68,62 50,52 32,62 38,46 26,36 42,36" fill="#047857" opacity="0.25" />
+  <!-- Central Circle -->
+  <circle cx="50" cy="50" r="14" fill="#ffffff" stroke="#065f46" stroke-width="2.5" />
+  <!-- Colorful center dots -->
+  <circle cx="50" cy="40" r="2.8" fill="#0284c7" />
+  <circle cx="58" cy="44" r="2.8" fill="#e11d48" />
+  <circle cx="60" cy="52" r="2.8" fill="#f59e0b" />
+  <circle cx="56" cy="60" r="2.8" fill="#16a34a" />
+  <circle cx="44" cy="60" r="2.8" fill="#9333ea" />
+  <circle cx="40" cy="52" r="2.8" fill="#0d9488" />
+  <circle cx="42" cy="44" r="2.8" fill="#ea580c" />
+  <circle cx="50" cy="50" r="3.5" fill="#065f46" />
+</svg>
