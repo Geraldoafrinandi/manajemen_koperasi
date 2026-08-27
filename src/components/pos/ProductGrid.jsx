@@ -50,16 +50,16 @@ export const ProductGrid = ({ onOpenScanner, onAddNewProduct }) => {
   };
 
   return (
-    <div className="flex flex-col h-full bg-white rounded-2xl p-4 sm:p-5 border border-slate-200 shadow-xs">
-      <div className="mb-4">
-        <div className="flex flex-col md:flex-row gap-2.5 items-stretch">
+    <div className="flex flex-col h-full bg-white rounded-2xl p-3 sm:p-5 border border-slate-200 shadow-xs">
+      <div className="mb-3.5 sm:mb-4">
+        <div className="flex flex-col sm:flex-row gap-2 sm:gap-2.5 items-stretch">
           <div className="relative flex-1">
             <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Cari nama barang atau kategori..."
+              placeholder="Cari nama barang / kategori..."
               className="w-full pl-10 pr-9 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm text-slate-900 placeholder:text-slate-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600 transition-all"
             />
             {searchQuery && (
@@ -73,36 +73,39 @@ export const ProductGrid = ({ onOpenScanner, onAddNewProduct }) => {
             )}
           </div>
 
-          <form onSubmit={handleManualBarcodeSubmit} className="flex gap-1.5 shrink-0">
-            <div className="relative">
-              <Barcode className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
-              <input
-                ref={manualInputRef}
-                type="text"
-                value={manualBarcode}
-                onChange={(e) => setManualBarcode(e.target.value)}
-                placeholder="Input barcode..."
-                className={`w-36 sm:w-44 pl-9 pr-3 py-2.5 bg-slate-50 border rounded-xl text-xs sm:text-sm text-slate-900 placeholder:text-slate-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600 font-mono transition-all ${justScanned ? 'border-emerald-500 ring-2 ring-emerald-500/20' : 'border-slate-200'
+          <div className="flex gap-2 items-center">
+            <form onSubmit={handleManualBarcodeSubmit} className="flex gap-1.5 flex-1 sm:flex-initial">
+              <div className="relative flex-1 sm:w-40">
+                <Barcode className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                <input
+                  ref={manualInputRef}
+                  type="text"
+                  value={manualBarcode}
+                  onChange={(e) => setManualBarcode(e.target.value)}
+                  placeholder="Barcode..."
+                  className={`w-full pl-9 pr-2.5 py-2.5 bg-slate-50 border rounded-xl text-xs sm:text-sm text-slate-900 placeholder:text-slate-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600 font-mono transition-all ${
+                    justScanned ? 'border-emerald-500 ring-2 ring-emerald-500/20' : 'border-slate-200'
                   }`}
-              />
-            </div>
-            <button
-              type="submit"
-              className="px-3 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 rounded-xl text-xs font-semibold transition-all active:scale-95 cursor-pointer"
-            >
-              Enter
-            </button>
-          </form>
+                />
+              </div>
+              <button
+                type="submit"
+                className="px-3 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 rounded-xl text-xs font-bold transition-all active:scale-95 cursor-pointer shrink-0"
+              >
+                Enter
+              </button>
+            </form>
 
-          <button
-            type="button"
-            onClick={onOpenScanner}
-            className="flex items-center justify-center space-x-2 px-3.5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs sm:text-sm rounded-xl transition-all shadow-xs shrink-0 cursor-pointer active:scale-95"
-            title="Buka kamera untuk scan barcode / QR produk"
-          >
-            <QrCode className="w-4 h-4" />
-            <span>Scan Kamera</span>
-          </button>
+            <button
+              type="button"
+              onClick={onOpenScanner}
+              className="flex items-center justify-center space-x-1.5 px-3.5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs sm:text-sm rounded-xl transition-all shadow-xs shrink-0 cursor-pointer active:scale-95"
+              title="Buka kamera untuk scan barcode / QR produk"
+            >
+              <QrCode className="w-4 h-4" />
+              <span className="whitespace-nowrap">Scan Kamera</span>
+            </button>
+          </div>
         </div>
       </div>
 

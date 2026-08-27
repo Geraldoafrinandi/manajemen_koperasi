@@ -23,6 +23,7 @@ import ShiftHistoryView from './views/cashier/ShiftHistoryView';
 function AppContent() {
   const { user, isAuthenticated, isAdmin, isCashier } = useAuth();
   const [currentView, setCurrentView] = useState('dashboard');
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   // Sync initial view based on role
   useEffect(() => {
@@ -38,6 +39,7 @@ function AppContent() {
   }
 
   const handleNavigate = (viewId) => {
+    setMobileMenuOpen(false);
     // Role guard: Kasir hanya boleh membuka POS kasir & riwayat shift
     if (isCashier && viewId !== 'pos' && viewId !== 'shift-history') {
       setCurrentView('pos');
@@ -53,17 +55,27 @@ function AppContent() {
 
   return (
     <div className="h-screen w-screen bg-slate-50 flex flex-col text-slate-800 overflow-hidden">
-      {/* Top Navbar (Fixed at Top) */}
-      <Navbar onNavigate={handleNavigate} currentView={currentView} />
+      {/* Top Navbar */}
+      <Navbar
+        onNavigate={handleNavigate}
+        currentView={currentView}
+        onToggleMobileMenu={() => setMobileMenuOpen(!mobileMenuOpen)}
+        isMobileMenuOpen={mobileMenuOpen}
+      />
 
-      {/* Main Body Container with Fixed Sidebar & Scrollable Main Content */}
-      <div className="flex-1 flex min-h-0 overflow-hidden">
-        {/* Fixed Left Sidebar */}
-        <Sidebar currentView={currentView} onNavigate={handleNavigate} />
+      {/* Main Body Container */}
+      <div className="flex-1 flex min-h-0 overflow-hidden relative">
+        {/* Sidebar (Desktop Collapsible & Mobile Slide-over Drawer) */}
+        <Sidebar
+          currentView={currentView}
+          onNavigate={handleNavigate}
+          isMobileMenuOpen={mobileMenuOpen}
+          onCloseMobileMenu={() => setMobileMenuOpen(false)}
+        />
 
-        {/* Scrollable Right Main Content Area */}
+        {/* Scrollable Main Content Area */}
         <main className="flex-1 overflow-y-auto min-w-0 bg-slate-50 focus:outline-none">
-          {/* Admin Views (Admin Only) */}
+          {/* Admin Views */}
           {isAdmin && currentView === 'dashboard' && <DashboardView onNavigate={handleNavigate} />}
           {isAdmin && currentView === 'products' && <ProductsView />}
           {isAdmin && currentView === 'stock' && <StockManagementView />}
@@ -71,7 +83,7 @@ function AppContent() {
           {isAdmin && currentView === 'reports' && <MonthlyReportsView />}
           {isAdmin && (currentView === 'settings' || currentView === 'report-settings') && <SettingsView />}
 
-          {/* Cashier Views (Cashier Only) */}
+          {/* Cashier Views */}
           {isCashier && currentView === 'pos' && <PosView onNavigate={handleNavigate} />}
           {isCashier && currentView === 'shift-history' && <ShiftHistoryView onNavigate={handleNavigate} />}
         </main>

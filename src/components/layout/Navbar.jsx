@@ -19,6 +19,8 @@ import {
   Trash2,
   Clock,
   Sparkles,
+  Menu,
+  X,
 } from 'lucide-react';
 
 const formatRelativeTime = (isoString) => {
@@ -34,7 +36,7 @@ const formatRelativeTime = (isoString) => {
   }
 };
 
-export const Navbar = ({ onNavigate, currentView }) => {
+export const Navbar = ({ onNavigate, currentView, onToggleMobileMenu, isMobileMenuOpen }) => {
   const { user, logout, isAdmin, isCashier } = useAuth();
   const {
     lowStockList,
@@ -96,18 +98,32 @@ export const Navbar = ({ onNavigate, currentView }) => {
   };
 
   return (
-    <header className="sticky top-0 z-30 bg-white text-slate-800 px-4 lg:px-6 py-2.5 no-print shadow-xs border-b border-slate-200 select-none">
+    <header className="sticky top-0 z-30 bg-white text-slate-800 px-3 sm:px-4 lg:px-6 py-2.5 no-print shadow-xs border-b border-slate-200 select-none">
       <div className="flex items-center justify-between">
-        {/* Brand & School Logo */}
-        <div
-          className="flex items-center space-x-3 cursor-pointer select-none"
-          onClick={() => onNavigate(isAdmin ? 'dashboard' : 'pos')}
-        >
-          <PermataLogo size="sm" textColor="dark" />
-          <div className="hidden md:block pl-2 border-l border-slate-200">
-            <span className="px-2.5 py-0.5 text-[10px] font-extrabold uppercase rounded-md bg-emerald-50 text-emerald-700 tracking-wider border border-emerald-200">
-              Koperasi Sekolah
-            </span>
+        {/* Left Section: Mobile Menu Toggle & Brand Logo */}
+        <div className="flex items-center space-x-2 sm:space-x-3">
+          {/* Hamburger Menu Toggle (Mobile Only) */}
+          <button
+            type="button"
+            onClick={onToggleMobileMenu}
+            className="md:hidden p-2 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-100 hover:text-slate-900 active:scale-95 transition-all cursor-pointer"
+            aria-label="Buka Menu Navigasi"
+            title="Menu Navigasi"
+          >
+            {isMobileMenuOpen ? <X className="w-5 h-5 text-slate-800" /> : <Menu className="w-5 h-5" />}
+          </button>
+
+          {/* Brand & School Logo */}
+          <div
+            className="flex items-center space-x-2.5 cursor-pointer select-none"
+            onClick={() => onNavigate(isAdmin ? 'dashboard' : 'pos')}
+          >
+            <PermataLogo size="sm" textColor="dark" />
+            <div className="hidden md:block pl-2 border-l border-slate-200">
+              <span className="px-2.5 py-0.5 text-[10px] font-extrabold uppercase rounded-md bg-emerald-50 text-emerald-700 tracking-wider border border-emerald-200">
+                Koperasi Sekolah
+              </span>
+            </div>
           </div>
         </div>
 
