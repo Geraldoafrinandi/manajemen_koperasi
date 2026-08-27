@@ -50,7 +50,9 @@ api.interceptors.response.use(
         message = `Error ${error.response.status}: ${error.response.statusText || 'Data tidak dapat diproses'}`;
       }
 
-      if (error.response.status === 401) {
+      // Hanya tangani session unauthorized jika BUKAN dari request submit login itu sendiri
+      const isLoginRequest = error.config?.url?.includes('/auth/login');
+      if (error.response.status === 401 && !isLoginRequest) {
         sessionStorage.removeItem('koperasi_permata_token');
         sessionStorage.removeItem('koperasi_permata_current_user');
         sessionStorage.removeItem('koperasi_session_active');
