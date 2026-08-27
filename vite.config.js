@@ -99,7 +99,7 @@ export default defineConfig({
     allowedHosts: true, // Izinkan akses melalui tunnel (localhost.run, localtunnel, ngrok, dll)
     proxy: {
       '/api': {
-        target: 'http://localhost:5000',
+        target: 'http://localhost:3000',
         changeOrigin: true,
       },
     },

@@ -80,7 +80,7 @@ cp .env.example .env
 ```
 Sesuaikan URL endpoint backend API:
 ```env
-VITE_API_URL=http://localhost:5000/api
+VITE_API_URL=http://localhost:3000/api
 ```
 
 ### 5. Jalankan Server Pengembangan
