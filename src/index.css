@@ -6,6 +6,12 @@
   color: #0f172a;
 }
 
+/* Sembunyikan tombol mata / clear bawaan browser Edge & IE */
+input::-ms-reveal,
+input::-ms-clear {
+  display: none !important;
+}
+
 /* Custom Scrollbar */
 ::-webkit-scrollbar {
   width: 6px;
