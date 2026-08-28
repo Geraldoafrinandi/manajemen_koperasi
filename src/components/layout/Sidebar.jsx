@@ -257,7 +257,7 @@ export const Sidebar = ({ currentView, onNavigate, isMobileMenuOpen, onCloseMobi
           <div className="relative w-72 max-w-[80vw] bg-white h-full shadow-2xl flex flex-col z-10 animate-in slide-in-from-left duration-200 border-r border-slate-200">
             {/* Drawer Header */}
             <div className="p-4 border-b border-slate-200 flex items-center justify-between bg-slate-50/70">
-              <PermataLogo size="sm" textColor="dark" />
+              <PermataLogo variant="full" size="sm" />
               <button
                 type="button"
                 onClick={onCloseMobileMenu}

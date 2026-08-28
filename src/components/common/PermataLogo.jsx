@@ -1,119 +1,217 @@
+import { useState } from 'react';
+
+
 export const PermataLogo = ({
-  variant = 'full', // 'full' | 'icon' | 'badge'
-  size = 'md', // 'sm' | 'md' | 'lg' | 'xl'
+  variant = 'full', // 'full' | 'icon' | 'image' | 'full-image' | 'full_image' | 'banner' | 'badge'
+  size = 'md', // 'xs' | 'sm' | 'md' | 'lg' | 'xl' | '2xl' | 'kop'
   className = '',
   textColor = 'dark', // 'dark' | 'light'
+  alt = 'Koperasi SD IT Permata',
 }) => {
+  const [imageError, setImageError] = useState(false);
+
   const sizeMap = {
-    xs: { icon: 'w-5 h-5', textTitle: 'text-xs', textSub: 'text-[8px]' },
-    sm: { icon: 'w-6 h-6', textTitle: 'text-sm', textSub: 'text-[9px]' },
-    md: { icon: 'w-9 h-9', textTitle: 'text-base', textSub: 'text-[10px]' },
-    lg: { icon: 'w-12 h-12', textTitle: 'text-xl', textSub: 'text-xs' },
-    xl: { icon: 'w-16 h-16', textTitle: 'text-2xl', textSub: 'text-sm' },
-    '2xl': { icon: 'w-20 h-20', textTitle: 'text-3xl', textSub: 'text-base' },
-    kop: { icon: 'w-20 h-20', textTitle: 'text-2xl', textSub: 'text-sm' },
+    xs: {
+      icon: 'w-6 h-6',
+      fullImage: 'h-6',
+      textTitle: 'text-xs',
+      textSub: 'text-[8px]',
+      gap: 'gap-1.5',
+    },
+    sm: {
+      icon: 'w-8 h-8',
+      fullImage: 'h-8 sm:h-9',
+      textTitle: 'text-sm',
+      textSub: 'text-[9px]',
+      gap: 'gap-2',
+    },
+    md: {
+      icon: 'w-10 h-10',
+      fullImage: 'h-10 sm:h-11',
+      textTitle: 'text-base',
+      textSub: 'text-[10px]',
+      gap: 'gap-2.5',
+    },
+    lg: {
+      icon: 'w-14 h-14',
+      fullImage: 'h-14 sm:h-16',
+      textTitle: 'text-xl',
+      textSub: 'text-xs',
+      gap: 'gap-3',
+    },
+    xl: {
+      icon: 'w-18 h-18',
+      fullImage: 'h-18 sm:h-20',
+      textTitle: 'text-2xl',
+      textSub: 'text-sm',
+      gap: 'gap-3.5',
+    },
+    '2xl': {
+      icon: 'w-24 h-24',
+      fullImage: 'h-24 sm:h-28',
+      textTitle: 'text-3xl',
+      textSub: 'text-base',
+      gap: 'gap-4',
+    },
+    kop: {
+      icon: 'w-20 h-20',
+      fullImage: 'h-16',
+      textTitle: 'text-2xl',
+      textSub: 'text-sm',
+      gap: 'gap-4',
+    },
   };
 
   const currentSize = sizeMap[size] || sizeMap.md;
 
-  // Islamic 8-Pointed Star Symbol with colorful community circle in center
-  const IconSymbol = (
+  const FallbackEmblemSvg = (
     <svg
-      viewBox="0 0 100 100"
-      className={`${currentSize.icon} shrink-0`}
+      viewBox="0 0 200 200"
+      className="w-full h-full shrink-0"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
     >
-      {/* Outer Square 1 */}
+      <defs>
+        <linearGradient id="emeraldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor="#059669" />
+          <stop offset="100%" stopColor="#047857" />
+        </linearGradient>
+      </defs>
       <rect
-        x="15"
-        y="15"
-        width="70"
-        height="70"
-        rx="4"
-        stroke="#065f46"
-        strokeWidth="7"
+        x="35"
+        y="35"
+        width="130"
+        height="130"
+        rx="10"
+        stroke="url(#emeraldGrad)"
+        strokeWidth="12"
         fill="#ffffff"
       />
-      {/* Rotated Square 2 (45 degrees) to form Rub el Hizb 8-pointed star */}
       <rect
-        x="15"
-        y="15"
-        width="70"
-        height="70"
-        rx="4"
-        transform="rotate(45 50 50)"
-        stroke="#047857"
-        strokeWidth="7"
+        x="35"
+        y="35"
+        width="130"
+        height="130"
+        rx="10"
+        transform="rotate(45 100 100)"
+        stroke="url(#emeraldGrad)"
+        strokeWidth="12"
         fill="#ffffff"
       />
-
-      {/* Inner Green Overlapping Lines */}
-      <polygon
-        points="50,22 58,36 74,36 62,46 68,62 50,52 32,62 38,46 26,36 42,36"
-        fill="#047857"
-        opacity="0.2"
-      />
-
-      {/* Central Colorful Community Circle */}
-      <circle cx="50" cy="50" r="14" fill="#ffffff" stroke="#065f46" strokeWidth="2.5" />
-      {/* Colorful center dots representing people/growth */}
-      <circle cx="50" cy="40" r="2.8" fill="#0284c7" />
-      <circle cx="58" cy="44" r="2.8" fill="#e11d48" />
-      <circle cx="60" cy="52" r="2.8" fill="#f59e0b" />
-      <circle cx="56" cy="60" r="2.8" fill="#16a34a" />
-      <circle cx="44" cy="60" r="2.8" fill="#9333ea" />
-      <circle cx="40" cy="52" r="2.8" fill="#0d9488" />
-      <circle cx="42" cy="44" r="2.8" fill="#ea580c" />
-      <circle cx="50" cy="50" r="3.5" fill="#065f46" />
+      <circle cx="100" cy="100" r="44" fill="#ffffff" stroke="#047857" strokeWidth="3" />
+      <circle cx="100" cy="100" r="12" fill="#047857" />
     </svg>
   );
 
-  if (variant === 'icon') {
-    return <div className={`inline-flex items-center ${className}`}>{IconSymbol}</div>;
+  // 1. Variant: Full Image Asli (/logo_full.png)
+  if (variant === 'full-image' || variant === 'full_image' || variant === 'banner') {
+    return (
+      <div className={`inline-flex items-center select-none ${className}`}>
+        <img
+          src="/logo_full.png"
+          alt={alt}
+          onError={() => setImageError(true)}
+          className={`${currentSize.fullImage} w-auto object-contain drop-shadow-2xs`}
+        />
+      </div>
+    );
   }
 
+  // 2. Variant: Icon / Image Only (/logo.png)
+  if (variant === 'icon' || variant === 'image') {
+    return (
+      <div
+        className={`inline-flex items-center justify-center ${currentSize.icon} shrink-0 select-none ${className}`}
+      >
+        {!imageError ? (
+          <img
+            src="/logo.png"
+            alt={alt}
+            onError={() => setImageError(true)}
+            className="w-full h-full object-contain drop-shadow-2xs"
+          />
+        ) : (
+          FallbackEmblemSvg
+        )}
+      </div>
+    );
+  }
+
+  // 3. Variant: Badge (/logo.png dalam pill / card)
+  if (variant === 'badge') {
+    return (
+      <div
+        className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-2xl bg-white border border-slate-200/80 shadow-2xs select-none ${className}`}
+      >
+        <div className={`${currentSize.icon} shrink-0`}>
+          <img
+            src="/logo.png"
+            alt={alt}
+            className="w-full h-full object-contain"
+          />
+        </div>
+        <div className="flex flex-col text-left">
+          <span className="font-extrabold text-xs text-slate-900 leading-tight">
+            KOPERASI PERMATA KITA
+          </span>
+          <span className="text-[9px] font-bold text-emerald-700">
+            SD IT Permata Kita
+          </span>
+        </div>
+      </div>
+    );
+  }
+
+  // 4. Default: Variant 'full' / 'horizontal' (Emblem /logo.png + Modern Responsive Typography)
   return (
-    <div className={`inline-flex items-center gap-3 ${className}`}>
-      {/* Logo Emblem Symbol */}
-      <div className="bg-white p-1 rounded-xl shadow-xs border border-emerald-200 flex items-center justify-center">
-        {IconSymbol}
+    <div className={`inline-flex items-center ${currentSize.gap} select-none ${className}`}>
+      {/* Emblem Icon */}
+      <div
+        className={`flex items-center justify-center ${currentSize.icon} shrink-0`}
+      >
+        {!imageError ? (
+          <img
+            src="/logo.png"
+            alt={alt}
+            onError={() => setImageError(true)}
+            className="w-full h-full object-contain drop-shadow-2xs"
+          />
+        ) : (
+          FallbackEmblemSvg
+        )}
       </div>
 
-      {/* Typography Brand Name */}
-      <div className="flex flex-col text-left">
+      {/* Brand Typography */}
+      <div className="flex flex-col text-left justify-center">
         <div className="flex items-center space-x-1.5 leading-none">
           <span
-            className={`font-extrabold tracking-tight ${currentSize.textTitle} ${
-              textColor === 'light' ? 'text-emerald-300' : 'text-emerald-800'
-            }`}
+            className={`font-black tracking-tight ${currentSize.textTitle} ${textColor === 'light' ? 'text-emerald-300' : 'text-slate-900'
+              }`}
             style={{
               fontFamily: "'Plus Jakarta Sans', sans-serif",
-              letterSpacing: '-0.02em',
+              letterSpacing: '-0.03em',
             }}
           >
-            PERMATA KITA
+            KOPERASI PERMATA KITA
           </span>
         </div>
 
-        <div className="mt-0.5 border-t border-b border-emerald-300/40 py-0.5">
+        <div className="mt-1 flex items-center space-x-1.5 leading-none">
           <span
-            className={`font-bold tracking-wider uppercase ${currentSize.textSub} ${
-              textColor === 'light' ? 'text-white' : 'text-emerald-950'
-            }`}
-            style={{ letterSpacing: '0.08em' }}
+            className={`font-extrabold tracking-wider uppercase text-[10px] sm:text-[11px] ${textColor === 'light' ? 'text-emerald-100' : 'text-emerald-700'
+              }`}
+            style={{ letterSpacing: '0.04em' }}
+          >
+            SD IT Permata
+          </span>
+          <span className="text-[9px] text-slate-300">•</span>
+          <span
+            className={`text-[9px] sm:text-[10px] font-medium ${textColor === 'light' ? 'text-slate-200' : 'text-slate-500'
+              }`}
           >
             Full Day School
           </span>
         </div>
-
-        <span
-          className={`text-[8px] font-medium leading-tight ${
-            textColor === 'light' ? 'text-emerald-100' : 'text-emerald-700'
-          }`}
-        >
-          Centre of Islamic Education Service
-        </span>
       </div>
     </div>
   );

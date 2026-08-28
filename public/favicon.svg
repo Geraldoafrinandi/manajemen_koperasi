@@ -1,19 +1,30 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100">
-  <!-- Outer Square 1 -->
-  <rect x="15" y="15" width="70" height="70" rx="4" stroke="#065f46" stroke-width="7" fill="#ffffff" />
-  <!-- Rotated Square 2 (45 deg) -->
-  <rect x="15" y="15" width="70" height="70" rx="4" transform="rotate(45 50 50)" stroke="#047857" stroke-width="7" fill="#ffffff" />
-  <!-- Inner Green Overlapping Lines -->
-  <polygon points="50,22 58,36 74,36 62,46 68,62 50,52 32,62 38,46 26,36 42,36" fill="#047857" opacity="0.25" />
-  <!-- Central Circle -->
-  <circle cx="50" cy="50" r="14" fill="#ffffff" stroke="#065f46" stroke-width="2.5" />
-  <!-- Colorful center dots -->
-  <circle cx="50" cy="40" r="2.8" fill="#0284c7" />
-  <circle cx="58" cy="44" r="2.8" fill="#e11d48" />
-  <circle cx="60" cy="52" r="2.8" fill="#f59e0b" />
-  <circle cx="56" cy="60" r="2.8" fill="#16a34a" />
-  <circle cx="44" cy="60" r="2.8" fill="#9333ea" />
-  <circle cx="40" cy="52" r="2.8" fill="#0d9488" />
-  <circle cx="42" cy="44" r="2.8" fill="#ea580c" />
-  <circle cx="50" cy="50" r="3.5" fill="#065f46" />
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <defs>
+    <linearGradient id="favEmerald" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#059669" />
+      <stop offset="100%" stop-color="#047857" />
+    </linearGradient>
+  </defs>
+  <rect x="35" y="35" width="130" height="130" rx="10" stroke="url(#favEmerald)" stroke-width="12" fill="#ffffff" />
+  <rect x="35" y="35" width="130" height="130" rx="10" transform="rotate(45 100 100)" stroke="url(#favEmerald)" stroke-width="12" fill="#ffffff" />
+  <circle cx="100" cy="100" r="52" fill="#f0fdf4" stroke="#10b981" stroke-width="2.5" />
+  <circle cx="100" cy="100" r="42" fill="#ffffff" stroke="#047857" stroke-width="2" />
+  <!-- Book/Crescent Top -->
+  <g transform="translate(100, 62) scale(0.65)">
+    <path d="M -3 -12 A 4 4 0 1 0 3 -12 A 3 3 0 1 1 -3 -12" fill="#047857" />
+    <path d="M 0 0 C -6 -5 -14 -4 -18 -1 L -18 7 C -14 4 -6 3 0 8 C 6 3 14 4 18 7 L 18 -1 C 14 -4 6 -5 0 0 Z" fill="#059669" />
+  </g>
+  <!-- 8 Community Figures -->
+  <g transform="translate(100, 106)">
+    <g transform="rotate(0)"><circle cx="0" cy="-24" r="4.5" fill="#0284c7" /><path d="M -7 -17 C -5 -21 5 -21 7 -17 C 8 -13 4 -10 0 -9 C -4 -10 -8 -13 -7 -17 Z" fill="#0284c7" /></g>
+    <g transform="rotate(45)"><circle cx="0" cy="-24" r="4.5" fill="#2563eb" /><path d="M -7 -17 C -5 -21 5 -21 7 -17 C 8 -13 4 -10 0 -9 C -4 -10 -8 -13 -7 -17 Z" fill="#2563eb" /></g>
+    <g transform="rotate(90)"><circle cx="0" cy="-24" r="4.5" fill="#ea580c" /><path d="M -7 -17 C -5 -21 5 -21 7 -17 C 8 -13 4 -10 0 -9 C -4 -10 -8 -13 -7 -17 Z" fill="#ea580c" /></g>
+    <g transform="rotate(135)"><circle cx="0" cy="-24" r="4.5" fill="#f59e0b" /><path d="M -7 -17 C -5 -21 5 -21 7 -17 C 8 -13 4 -10 0 -9 C -4 -10 -8 -13 -7 -17 Z" fill="#f59e0b" /></g>
+    <g transform="rotate(180)"><circle cx="0" cy="-24" r="4.5" fill="#10b981" /><path d="M -7 -17 C -5 -21 5 -21 7 -17 C 8 -13 4 -10 0 -9 C -4 -10 -8 -13 -7 -17 Z" fill="#10b981" /></g>
+    <g transform="rotate(225)"><circle cx="0" cy="-24" r="4.5" fill="#0d9488" /><path d="M -7 -17 C -5 -21 5 -21 7 -17 C 8 -13 4 -10 0 -9 C -4 -10 -8 -13 -7 -17 Z" fill="#0d9488" /></g>
+    <g transform="rotate(270)"><circle cx="0" cy="-24" r="4.5" fill="#9333ea" /><path d="M -7 -17 C -5 -21 5 -21 7 -17 C 8 -13 4 -10 0 -9 C -4 -10 -8 -13 -7 -17 Z" fill="#9333ea" /></g>
+    <g transform="rotate(315)"><circle cx="0" cy="-24" r="4.5" fill="#e11d48" /><path d="M -7 -17 C -5 -21 5 -21 7 -17 C 8 -13 4 -10 0 -9 C -4 -10 -8 -13 -7 -17 Z" fill="#e11d48" /></g>
+    <circle cx="0" cy="0" r="9" fill="#ffffff" stroke="#047857" stroke-width="2.5" />
+    <circle cx="0" cy="0" r="3" fill="#047857" />
+  </g>
 </svg>

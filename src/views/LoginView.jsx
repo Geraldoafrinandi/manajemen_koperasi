@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
-import PermataLogo from '../components/common/PermataLogo';
 import {
   Lock,
   User,
@@ -51,18 +50,16 @@ export const LoginView = () => {
   return (
     <div className="min-h-screen bg-slate-100/90 flex flex-col items-center justify-center p-4 sm:p-6">
       {/* Login Card */}
-      <div className="w-full max-w-sm bg-white rounded-3xl shadow-xl shadow-slate-200/60 p-7 sm:p-8 border border-slate-200/80">
-        {/* Logo & Header */}
-        <div className="text-center mb-6">
-          <div className="inline-flex p-3 bg-emerald-50 rounded-2xl border border-emerald-100 mb-3.5 shadow-2xs">
-            <PermataLogo variant="icon" size="lg" />
+      <div className="w-full max-w-[420px] bg-white rounded-3xl shadow-xl shadow-slate-200/60 p-7 sm:p-8 border border-slate-200/80">
+        {/* Logo Header */}
+        <div className="text-center mb-6 flex flex-col items-center">
+          <div className="w-full flex items-center justify-center py-2">
+            <img
+              src="/logo_full.png"
+              alt="Logo SD IT Permata Kita"
+              className="h-20 sm:h-24 w-auto max-w-full object-contain drop-shadow-xs"
+            />
           </div>
-          <h1 className="text-xl sm:text-2xl font-extrabold text-slate-900 tracking-tight">
-            Koperasi SD IT Permata
-          </h1>
-          <p className="text-xs sm:text-sm text-slate-500 mt-1">
-            Silakan masuk dengan akun Anda
-          </p>
         </div>
 
         {/* Error Alert */}

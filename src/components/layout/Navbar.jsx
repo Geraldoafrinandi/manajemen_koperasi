@@ -115,15 +115,11 @@ export const Navbar = ({ onNavigate, currentView, onToggleMobileMenu, isMobileMe
 
           {/* Brand & School Logo */}
           <div
-            className="flex items-center space-x-2.5 cursor-pointer select-none"
+            className="flex items-center space-x-2.5 cursor-pointer select-none group"
             onClick={() => onNavigate(isAdmin ? 'dashboard' : 'pos')}
           >
-            <PermataLogo size="sm" textColor="dark" />
-            <div className="hidden md:block pl-2 border-l border-slate-200">
-              <span className="px-2.5 py-0.5 text-[10px] font-extrabold uppercase rounded-md bg-emerald-50 text-emerald-700 tracking-wider border border-emerald-200">
-                Koperasi Sekolah
-              </span>
-            </div>
+            <PermataLogo variant="full" size="sm" />
+
           </div>
         </div>
 
@@ -138,8 +134,8 @@ export const Navbar = ({ onNavigate, currentView, onToggleMobileMenu, isMobileMe
                   setShowProfileMenu(false);
                 }}
                 className={`relative p-2 rounded-xl border transition-colors cursor-pointer ${totalAlertCount > 0
-                    ? 'border-amber-300 bg-amber-50 text-amber-700 hover:bg-amber-100'
-                    : 'border-slate-200 text-slate-500 hover:bg-slate-50 hover:text-slate-700'
+                  ? 'border-amber-300 bg-amber-50 text-amber-700 hover:bg-amber-100'
+                  : 'border-slate-200 text-slate-500 hover:bg-slate-50 hover:text-slate-700'
                   }`}
                 title="Pusat Pemberitahuan Admin"
               >
@@ -167,8 +163,8 @@ export const Navbar = ({ onNavigate, currentView, onToggleMobileMenu, isMobileMe
                       type="button"
                       onClick={() => setActiveAlertTab('requests')}
                       className={`flex-1 py-1.5 px-2 rounded-lg flex items-center justify-center space-x-1.5 transition-all cursor-pointer ${activeAlertTab === 'requests'
-                          ? 'bg-white text-emerald-700 shadow-2xs font-extrabold'
-                          : 'text-slate-500 hover:text-slate-800'
+                        ? 'bg-white text-emerald-700 shadow-2xs font-extrabold'
+                        : 'text-slate-500 hover:text-slate-800'
                         }`}
                     >
                       <Barcode className="w-3.5 h-3.5" />
@@ -183,8 +179,8 @@ export const Navbar = ({ onNavigate, currentView, onToggleMobileMenu, isMobileMe
                       type="button"
                       onClick={() => setActiveAlertTab('stock')}
                       className={`flex-1 py-1.5 px-2 rounded-lg flex items-center justify-center space-x-1.5 transition-all cursor-pointer ${activeAlertTab === 'stock'
-                          ? 'bg-white text-rose-700 shadow-2xs font-extrabold'
-                          : 'text-slate-500 hover:text-slate-800'
+                        ? 'bg-white text-rose-700 shadow-2xs font-extrabold'
+                        : 'text-slate-500 hover:text-slate-800'
                         }`}
                     >
                       <AlertTriangle className="w-3.5 h-3.5" />
