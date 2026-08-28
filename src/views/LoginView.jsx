@@ -52,8 +52,8 @@ export const LoginView = () => {
       {/* Login Card */}
       <div className="w-full max-w-[420px] bg-white rounded-3xl shadow-xl shadow-slate-200/60 p-7 sm:p-8 border border-slate-200/80">
         {/* Logo Header */}
-        <div className="text-center mb-6 flex flex-col items-center">
-          <div className="w-full flex items-center justify-center py-2">
+        <div className="text-center mb-3 flex flex-col items-center">
+          <div className="w-full flex items-center justify-center ">
             <img
               src="/logo_full.png"
               alt="Logo SD IT Permata Kita"
