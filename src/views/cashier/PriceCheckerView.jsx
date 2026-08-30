@@ -242,8 +242,8 @@ export const PriceCheckerView = ({ onNavigate }) => {
   return (
     <div
       className={`min-h-full flex flex-col justify-between bg-slate-50 text-slate-800 select-none transition-all duration-200 ${isFullscreen
-          ? 'fixed inset-0 z-50 overflow-y-auto p-4 sm:p-8 bg-slate-50'
-          : 'p-3 sm:p-6 max-w-5xl mx-auto'
+        ? 'fixed inset-0 z-50 overflow-y-auto p-4 sm:p-8 bg-slate-50'
+        : 'p-3 sm:p-6 max-w-5xl mx-auto'
         }`}
     >
       {/* Modal Kamera Scanner (Aman dari race condition & transition collision) */}
@@ -309,8 +309,8 @@ export const PriceCheckerView = ({ onNavigate }) => {
             type="button"
             onClick={toggleFullscreen}
             className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-xl border text-xs font-bold transition-colors cursor-pointer ${isFullscreen
-                ? 'bg-emerald-50 border-emerald-300 text-emerald-800'
-                : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50'
+              ? 'bg-emerald-50 border-emerald-300 text-emerald-800'
+              : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50'
               }`}
             title="Tampilkan Satu Layar Penuh (Fullscreen)"
           >
@@ -397,7 +397,7 @@ export const PriceCheckerView = ({ onNavigate }) => {
               </div>
 
               {/* Stock Info */}
-              <div className="text-center mb-6">
+              {/* <div className="text-center mb-6">
                 <span className="text-xs text-slate-600">
                   Status Stok:{' '}
                   <strong className={scannedProduct.stock > 0 ? 'text-emerald-700' : 'text-rose-600'}>
@@ -406,7 +406,7 @@ export const PriceCheckerView = ({ onNavigate }) => {
                       : 'Stok Habis'}
                   </strong>
                 </span>
-              </div>
+              </div> */}
 
               {/* Simple Action */}
               <div className="pt-2 border-t border-slate-100">
