@@ -19,6 +19,7 @@ import MonthlyReportsView from './views/admin/MonthlyReportsView';
 import SettingsView from './views/admin/SettingsView';
 import PosView from './views/cashier/PosView';
 import ShiftHistoryView from './views/cashier/ShiftHistoryView';
+import PriceCheckerView from './views/cashier/PriceCheckerView';
 
 function AppContent() {
   const { user, isAuthenticated, isAdmin, isCashier } = useAuth();
@@ -27,7 +28,7 @@ function AppContent() {
 
   // Sync initial view based on role
   useEffect(() => {
-    if (isCashier && currentView !== 'pos' && currentView !== 'shift-history') {
+    if (isCashier && currentView !== 'pos' && currentView !== 'shift-history' && currentView !== 'price-checker') {
       setCurrentView('pos');
     } else if (isAdmin && (currentView === 'pos' || currentView === 'shift-history')) {
       setCurrentView('dashboard');
@@ -40,8 +41,8 @@ function AppContent() {
 
   const handleNavigate = (viewId) => {
     setMobileMenuOpen(false);
-    // Role guard: Kasir hanya boleh membuka POS kasir & riwayat shift
-    if (isCashier && viewId !== 'pos' && viewId !== 'shift-history') {
+    // Role guard: Kasir boleh membuka POS kasir, riwayat shift, dan cek harga
+    if (isCashier && viewId !== 'pos' && viewId !== 'shift-history' && viewId !== 'price-checker') {
       setCurrentView('pos');
       return;
     }
@@ -82,10 +83,12 @@ function AppContent() {
           {isAdmin && currentView === 'transactions' && <TransactionsView />}
           {isAdmin && currentView === 'reports' && <MonthlyReportsView />}
           {isAdmin && (currentView === 'settings' || currentView === 'report-settings') && <SettingsView />}
+          {isAdmin && currentView === 'price-checker' && <PriceCheckerView onNavigate={handleNavigate} />}
 
           {/* Cashier Views */}
           {isCashier && currentView === 'pos' && <PosView onNavigate={handleNavigate} />}
           {isCashier && currentView === 'shift-history' && <ShiftHistoryView onNavigate={handleNavigate} />}
+          {isCashier && currentView === 'price-checker' && <PriceCheckerView onNavigate={handleNavigate} />}
         </main>
       </div>
     </div>

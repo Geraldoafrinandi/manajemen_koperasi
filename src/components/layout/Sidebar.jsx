@@ -12,6 +12,7 @@ import {
   Settings,
   RotateCcw,
   Barcode,
+  ScanLine,
   ChevronRight,
   X,
 } from 'lucide-react';
@@ -56,6 +57,7 @@ export const Sidebar = ({ currentView, onNavigate, isMobileMenuOpen, onCloseMobi
           icon: Layers,
           badge: lowStockCount > 0 ? `${lowStockCount} Alert` : null,
         },
+        { id: 'price-checker', label: 'Cek Harga (Scanner)', icon: ScanLine },
         { id: 'transactions', label: 'Riwayat Transaksi', icon: Receipt },
         { id: 'reports', label: 'Rekap & Laporan', icon: FileText },
       ],
@@ -71,9 +73,10 @@ export const Sidebar = ({ currentView, onNavigate, isMobileMenuOpen, onCloseMobi
   // Cashier menu grouped
   const cashierSections = [
     {
-      title: 'Kasir POS',
+      title: 'Kasir & Layanan',
       items: [
         { id: 'pos', label: 'Kasir POS & Scanner', icon: ShoppingCart },
+        { id: 'price-checker', label: 'Cek Harga (Scanner)', icon: ScanLine },
         { id: 'shift-history', label: 'Riwayat Shift Kasir', icon: RotateCcw },
       ],
     },

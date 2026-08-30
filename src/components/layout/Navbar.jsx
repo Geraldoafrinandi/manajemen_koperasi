@@ -380,16 +380,28 @@ export const Navbar = ({ onNavigate, currentView, onToggleMobileMenu, isMobileMe
                 )}
 
                 {isCashier && (
-                  <button
-                    onClick={() => {
-                      setShowProfileMenu(false);
-                      onNavigate('shift-history');
-                    }}
-                    className="w-full flex items-center space-x-2 px-3 py-2 rounded-xl text-xs font-semibold text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition-colors cursor-pointer"
-                  >
-                    <RotateCcw className="w-4 h-4 text-slate-400" />
-                    <span>Riwayat Shift Kasir</span>
-                  </button>
+                  <>
+                    <button
+                      onClick={() => {
+                        setShowProfileMenu(false);
+                        onNavigate('price-checker');
+                      }}
+                      className="w-full flex items-center space-x-2 px-3 py-2 rounded-xl text-xs font-semibold text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition-colors cursor-pointer"
+                    >
+                      <Barcode className="w-4 h-4 text-emerald-600" />
+                      <span>Cek Harga (Scanner)</span>
+                    </button>
+                    <button
+                      onClick={() => {
+                        setShowProfileMenu(false);
+                        onNavigate('shift-history');
+                      }}
+                      className="w-full flex items-center space-x-2 px-3 py-2 rounded-xl text-xs font-semibold text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition-colors cursor-pointer"
+                    >
+                      <RotateCcw className="w-4 h-4 text-slate-400" />
+                      <span>Riwayat Shift Kasir</span>
+                    </button>
+                  </>
                 )}
 
                 <div className="my-1 border-t border-slate-100"></div>
