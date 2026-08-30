@@ -264,11 +264,8 @@ export const PriceCheckerView = ({ onNavigate }) => {
           </div>
           <div>
             <h1 className="text-sm sm:text-base font-bold text-slate-900 leading-none">
-              Cek Harga Barang
+              Koperasi SD IT PERMATA
             </h1>
-            <p className="text-[11px] text-slate-500 mt-0.5">
-              Koperasi SD IT Permata
-            </p>
           </div>
         </div>
 
