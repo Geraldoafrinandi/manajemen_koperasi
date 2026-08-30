@@ -1,10 +1,10 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { Html5Qrcode } from 'html5-qrcode';
 import { useProducts } from '../../context/ProductContext';
 import { useCart } from '../../context/CartContext';
 import { useToast } from '../../context/ToastContext';
 import { formatRupiah } from '../../utils/formatters';
 import productService from '../../services/productService';
+import BarcodeCameraScanner from '../../components/pos/BarcodeCameraScanner';
 import {
   ScanLine,
   Camera,
@@ -14,7 +14,6 @@ import {
   AlertTriangle,
   RotateCcw,
   Plus,
-  X,
   Clock,
   ArrowRight,
   ZoomIn,
@@ -64,7 +63,6 @@ export const PriceCheckerView = ({ onNavigate }) => {
   const [manualInput, setManualInput] = useState('');
   const [unregisteredBarcode, setUnregisteredBarcode] = useState('');
   const [isCameraOpen, setIsCameraOpen] = useState(false);
-  const [cameraError, setCameraError] = useState('');
 
   // Zoom & Fullscreen Settings
   const [zoomLevel, setZoomLevel] = useState(() => {
@@ -85,7 +83,6 @@ export const PriceCheckerView = ({ onNavigate }) => {
   // Scanner Hardware Keystroke Interceptor
   const bufferRef = useRef('');
   const lastKeyTimeRef = useRef(Date.now());
-  const html5QrCodeRef = useRef(null);
 
   useEffect(() => {
     if (refreshProducts) {
@@ -246,43 +243,6 @@ export const PriceCheckerView = ({ onNavigate }) => {
     if (countdownTimerRef.current) clearInterval(countdownTimerRef.current);
   };
 
-  // Camera Scanner Lifecycle
-  useEffect(() => {
-    if (!isCameraOpen) {
-      if (html5QrCodeRef.current && html5QrCodeRef.current.isScanning) {
-        html5QrCodeRef.current.stop().catch(() => { });
-      }
-      return;
-    }
-
-    setCameraError('');
-    const qrCode = new Html5Qrcode('kiosk-camera-preview');
-    html5QrCodeRef.current = qrCode;
-
-    qrCode
-      .start(
-        { facingMode: 'environment' },
-        { fps: 15, qrbox: { width: 250, height: 180 } },
-        (decodedText) => {
-          if (decodedText) {
-            handleLookup(decodedText);
-            setIsCameraOpen(false);
-          }
-        },
-        () => { }
-      )
-      .catch((err) => {
-        console.warn(err);
-        setCameraError('Gagal membuka kamera. Pastikan izin kamera aktif.');
-      });
-
-    return () => {
-      if (html5QrCodeRef.current && html5QrCodeRef.current.isScanning) {
-        html5QrCodeRef.current.stop().catch(() => { });
-      }
-    };
-  }, [isCameraOpen]);
-
   return (
     <div
       className={`min-h-full flex flex-col justify-between bg-slate-50 text-slate-800 select-none transition-all duration-200 ${isFullscreen
@@ -290,6 +250,16 @@ export const PriceCheckerView = ({ onNavigate }) => {
           : 'p-3 sm:p-6 max-w-5xl mx-auto'
         }`}
     >
+      {/* Modal Kamera Scanner (Aman dari race condition & transition collision) */}
+      <BarcodeCameraScanner
+        isOpen={isCameraOpen}
+        onClose={() => setIsCameraOpen(false)}
+        onScanSuccess={(code) => {
+          setIsCameraOpen(false);
+          handleLookup(code);
+        }}
+      />
+
       {/* Top Header & Settings Toolbar */}
       <div className="flex flex-wrap items-center justify-between pb-3.5 mb-2 border-b border-slate-200 gap-3">
         <div className="flex items-center space-x-2.5">
@@ -306,7 +276,7 @@ export const PriceCheckerView = ({ onNavigate }) => {
           </div>
         </div>
 
-        {/* Toolbar: Zoom Controls, Fullscreen Toggle, POS Button */}
+        {/* Toolbar: Zoom Controls, Fullscreen Toggle */}
         <div className="flex items-center space-x-2 text-xs">
           {/* Zoom In / Out Controls */}
           <div className="flex items-center bg-white border border-slate-200 rounded-xl p-0.5 shadow-2xs">
@@ -351,18 +321,6 @@ export const PriceCheckerView = ({ onNavigate }) => {
             {isFullscreen ? <Minimize className="w-3.5 h-3.5 text-emerald-600" /> : <Maximize className="w-3.5 h-3.5 text-slate-500" />}
             <span className="hidden sm:inline">{isFullscreen ? 'Keluar Fullscreen' : 'Full Layar'}</span>
           </button>
-
-          {/* Return to POS */}
-          {/* {onNavigate && (
-            <button
-              type="button"
-              onClick={() => onNavigate('pos')}
-              className="flex items-center space-x-1.5 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition-colors cursor-pointer"
-            >
-              <ShoppingCart className="w-3.5 h-3.5" />
-              <span>Kembali ke POS</span>
-            </button>
-          )} */}
         </div>
       </div>
 
@@ -523,35 +481,16 @@ export const PriceCheckerView = ({ onNavigate }) => {
                 Dekatkan barcode produk di depan alat pemindai untuk mengecek harga.
               </p>
 
-              {/* Camera preview if camera is opened */}
-              {isCameraOpen ? (
-                <div className="mt-5">
-                  <div className="relative rounded-2xl overflow-hidden bg-slate-900 max-w-xs mx-auto">
-                    <div id="kiosk-camera-preview" className="w-full h-48" />
-                    <button
-                      type="button"
-                      onClick={() => setIsCameraOpen(false)}
-                      className="absolute top-2 right-2 p-1.5 bg-black/60 text-white rounded-full hover:bg-black"
-                    >
-                      <X className="w-4 h-4" />
-                    </button>
-                  </div>
-                  {cameraError && (
-                    <p className="text-xs text-rose-600 mt-2">{cameraError}</p>
-                  )}
-                </div>
-              ) : (
-                <div className="mt-6 flex flex-col items-center gap-2">
-                  <button
-                    type="button"
-                    onClick={() => setIsCameraOpen(true)}
-                    className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-semibold transition-colors cursor-pointer"
-                  >
-                    <Camera className="w-3.5 h-3.5 text-slate-600" />
-                    <span>Gunakan Kamera HP / Laptop</span>
-                  </button>
-                </div>
-              )}
+              <div className="mt-6 flex flex-col items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setIsCameraOpen(true)}
+                  className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-semibold transition-colors cursor-pointer"
+                >
+                  <Camera className="w-3.5 h-3.5 text-slate-600" />
+                  <span>Gunakan Kamera HP / Laptop</span>
+                </button>
+              </div>
 
               {/* Manual input fallback */}
               <div className="mt-8 pt-6 border-t border-slate-100">

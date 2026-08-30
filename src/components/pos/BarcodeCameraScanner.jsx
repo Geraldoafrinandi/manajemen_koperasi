@@ -47,7 +47,7 @@ export const BarcodeCameraScanner = ({ isOpen, onClose, onScanSuccess }) => {
   const fileInputRef = useRef(null);
   const lastScanTimeRef = useRef(0);
   const lastScannedCodeRef = useRef('');
-  const feedbackTimeoutRef = useRef(null);
+  const isTransitioningRef = useRef(false);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -123,7 +123,7 @@ export const BarcodeCameraScanner = ({ isOpen, onClose, onScanSuccess }) => {
       await html5QrCode.start(
         targetCamera,
         config,
-        (decodedText) => {
+        async (decodedText) => {
           const now = Date.now();
           const isSameCode = decodedText === lastScannedCodeRef.current;
           if (now - lastScanTimeRef.current < (isSameCode ? 2000 : 800)) {
@@ -172,12 +172,18 @@ export const BarcodeCameraScanner = ({ isOpen, onClose, onScanSuccess }) => {
   };
 
   const stopScanner = async () => {
-    if (html5QrCodeRef.current && html5QrCodeRef.current.isScanning) {
+    if (isTransitioningRef.current) return;
+    if (html5QrCodeRef.current) {
       try {
-        await html5QrCodeRef.current.stop();
+        isTransitioningRef.current = true;
+        if (html5QrCodeRef.current.isScanning) {
+          await html5QrCodeRef.current.stop();
+        }
         html5QrCodeRef.current.clear();
       } catch (e) {
         console.warn('Error stopping scanner:', e);
+      } finally {
+        isTransitioningRef.current = false;
       }
     }
     setIsScanning(false);
