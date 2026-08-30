@@ -47,6 +47,7 @@ export const BarcodeCameraScanner = ({ isOpen, onClose, onScanSuccess }) => {
   const fileInputRef = useRef(null);
   const lastScanTimeRef = useRef(0);
   const lastScannedCodeRef = useRef('');
+  const feedbackTimeoutRef = useRef(null);
   const isTransitioningRef = useRef(false);
 
   useEffect(() => {
