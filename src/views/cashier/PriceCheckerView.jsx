@@ -272,61 +272,74 @@ export const PriceCheckerView = ({ onNavigate }) => {
           </div>
         </div>
 
-        {/* Toolbar: Zoom Controls, Fullscreen Toggle */}
+        {/* Toolbar: Saat Fullscreen aktif, sembunyikan semua tombol setting & kamera */}
         <div className="flex items-center space-x-2 text-xs">
-          {/* Zoom In / Out Controls */}
-          <div className="flex items-center bg-white border border-slate-200 rounded-xl p-0.5 shadow-2xs">
+          {isFullscreen ? (
+            /* Tampilan Bersih Saat Layar Penuh: Hanya tombol minimalis untuk keluar */
             <button
               type="button"
-              onClick={() => handleZoomChange(zoomLevel - 15)}
-              disabled={zoomLevel <= 80}
-              className="p-1.5 hover:bg-slate-100 disabled:opacity-30 rounded-lg text-slate-600 transition-colors cursor-pointer"
-              title="Perkecil Tampilan (Zoom Out)"
+              onClick={toggleFullscreen}
+              className="flex items-center space-x-1.5 px-3 py-1.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-100 text-slate-500 hover:text-slate-800 text-xs font-semibold shadow-2xs transition-colors cursor-pointer"
+              title="Kembali ke Tampilan Normal (Esc)"
             >
-              <ZoomOut className="w-3.5 h-3.5" />
+              <Minimize className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">Keluar Fullscreen</span>
             </button>
-            <button
-              type="button"
-              onClick={() => handleZoomChange(100)}
-              className="px-2 py-1 text-[11px] font-mono font-bold text-slate-700 hover:text-emerald-700 transition-colors cursor-pointer"
-              title="Reset Zoom ke 100%"
-            >
-              {zoomLevel}%
-            </button>
-            <button
-              type="button"
-              onClick={() => handleZoomChange(zoomLevel + 15)}
-              disabled={zoomLevel >= 200}
-              className="p-1.5 hover:bg-slate-100 disabled:opacity-30 rounded-lg text-slate-600 transition-colors cursor-pointer"
-              title="Perbesar Tampilan (Zoom In)"
-            >
-              <ZoomIn className="w-3.5 h-3.5" />
-            </button>
-          </div>
+          ) : (
+            /* Tampilan Normal: Tampilkan Zoom, Kamera Cadangan, dan Tombol Full Layar */
+            <>
+              {/* Zoom In / Out Controls */}
+              <div className="flex items-center bg-white border border-slate-200 rounded-xl p-0.5 shadow-2xs">
+                <button
+                  type="button"
+                  onClick={() => handleZoomChange(zoomLevel - 15)}
+                  disabled={zoomLevel <= 80}
+                  className="p-1.5 hover:bg-slate-100 disabled:opacity-30 rounded-lg text-slate-600 transition-colors cursor-pointer"
+                  title="Perkecil Tampilan (Zoom Out)"
+                >
+                  <ZoomOut className="w-3.5 h-3.5" />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleZoomChange(100)}
+                  className="px-2 py-1 text-[11px] font-mono font-bold text-slate-700 hover:text-emerald-700 transition-colors cursor-pointer"
+                  title="Reset Zoom ke 100%"
+                >
+                  {zoomLevel}%
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleZoomChange(zoomLevel + 15)}
+                  disabled={zoomLevel >= 200}
+                  className="p-1.5 hover:bg-slate-100 disabled:opacity-30 rounded-lg text-slate-600 transition-colors cursor-pointer"
+                  title="Perbesar Tampilan (Zoom In)"
+                >
+                  <ZoomIn className="w-3.5 h-3.5" />
+                </button>
+              </div>
 
-          {/* Kamera Cadangan (Disimpan di Toolbar) */}
-          <button
-            type="button"
-            onClick={() => setIsCameraOpen(true)}
-            className="p-2 bg-white border border-slate-200 text-slate-500 hover:text-slate-800 hover:bg-slate-50 rounded-xl shadow-2xs transition-colors cursor-pointer"
-            title="Buka Kamera Scanner (Cadangan)"
-          >
-            <Camera className="w-3.5 h-3.5" />
-          </button>
+              {/* Kamera Cadangan (Disimpan di Toolbar) */}
+              <button
+                type="button"
+                onClick={() => setIsCameraOpen(true)}
+                className="p-2 bg-white border border-slate-200 text-slate-500 hover:text-slate-800 hover:bg-slate-50 rounded-xl shadow-2xs transition-colors cursor-pointer"
+                title="Buka Kamera Scanner (Cadangan)"
+              >
+                <Camera className="w-3.5 h-3.5" />
+              </button>
 
-          {/* Fullscreen Toggle Button */}
-          <button
-            type="button"
-            onClick={toggleFullscreen}
-            className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-xl border text-xs font-bold transition-colors cursor-pointer ${isFullscreen
-              ? 'bg-emerald-50 border-emerald-300 text-emerald-800'
-              : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50'
-              }`}
-            title="Tampilkan Satu Layar Penuh (Fullscreen)"
-          >
-            {isFullscreen ? <Minimize className="w-3.5 h-3.5 text-emerald-600" /> : <Maximize className="w-3.5 h-3.5 text-slate-500" />}
-            <span className="hidden sm:inline">{isFullscreen ? 'Keluar Fullscreen' : 'Full Layar'}</span>
-          </button>
+              {/* Fullscreen Toggle Button */}
+              <button
+                type="button"
+                onClick={toggleFullscreen}
+                className="flex items-center space-x-1.5 px-3 py-1.5 rounded-xl border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 text-xs font-bold transition-colors cursor-pointer shadow-2xs"
+                title="Tampilkan Satu Layar Penuh (Fullscreen)"
+              >
+                <Maximize className="w-3.5 h-3.5 text-slate-500" />
+                <span className="hidden sm:inline">Full Layar</span>
+              </button>
+            </>
+          )}
         </div>
       </div>
 
