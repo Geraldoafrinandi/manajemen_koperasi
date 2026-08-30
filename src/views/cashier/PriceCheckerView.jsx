@@ -304,6 +304,16 @@ export const PriceCheckerView = ({ onNavigate }) => {
             </button>
           </div>
 
+          {/* Kamera Cadangan (Disimpan di Toolbar) */}
+          <button
+            type="button"
+            onClick={() => setIsCameraOpen(true)}
+            className="p-2 bg-white border border-slate-200 text-slate-500 hover:text-slate-800 hover:bg-slate-50 rounded-xl shadow-2xs transition-colors cursor-pointer"
+            title="Buka Kamera Scanner (Cadangan)"
+          >
+            <Camera className="w-3.5 h-3.5" />
+          </button>
+
           {/* Fullscreen Toggle Button */}
           <button
             type="button"
@@ -457,19 +467,8 @@ export const PriceCheckerView = ({ onNavigate }) => {
                 Arahkan Barcode ke Scanner
               </h2>
               <p className="text-xs sm:text-sm text-slate-500 mt-1.5 max-w-xs mx-auto">
-                Dekatkan barcode produk di depan alat pemindai untuk mengecek harga.
+                Dekatkan barcode produk di bawah pemindai untuk mengecek harga barang.
               </p>
-
-              <div className="mt-6 flex flex-col items-center gap-2">
-                <button
-                  type="button"
-                  onClick={() => setIsCameraOpen(true)}
-                  className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-semibold transition-colors cursor-pointer"
-                >
-                  <Camera className="w-3.5 h-3.5 text-slate-600" />
-                  <span>Gunakan Kamera HP / Laptop</span>
-                </button>
-              </div>
 
               {/* Manual input fallback */}
               <div className="mt-8 pt-6 border-t border-slate-100">
