@@ -1,6 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useProducts } from '../../context/ProductContext';
-import { useCart } from '../../context/CartContext';
 import { useToast } from '../../context/ToastContext';
 import { formatRupiah } from '../../utils/formatters';
 import productService from '../../services/productService';
@@ -9,11 +8,9 @@ import {
   ScanLine,
   Camera,
   Search,
-  ShoppingCart,
   CheckCircle2,
   AlertTriangle,
   RotateCcw,
-  Plus,
   Clock,
   ArrowRight,
   ZoomIn,
@@ -55,7 +52,6 @@ const playBeep = (isSuccess = true) => {
 
 export const PriceCheckerView = ({ onNavigate }) => {
   const { products, refreshProducts } = useProducts();
-  const { addItem } = useCart();
   const toast = useToast();
 
   const [scannedProduct, setScannedProduct] = useState(null);
@@ -412,32 +408,15 @@ export const PriceCheckerView = ({ onNavigate }) => {
                 </span>
               </div>
 
-              {/* Simple Actions */}
-              <div className="flex items-center justify-center gap-2 pt-2 border-t border-slate-100">
+              {/* Simple Action */}
+              <div className="pt-2 border-t border-slate-100">
                 <button
                   type="button"
                   onClick={handleReset}
-                  className="flex-1 py-2.5 px-4 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+                  className="w-full py-2.5 px-4 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
                 >
                   <RotateCcw className="w-3.5 h-3.5" />
-                  <span>Scan Lain ({countdown}s)</span>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => {
-                    if (scannedProduct.stock <= 0) {
-                      toast.error('Stok habis!');
-                      return;
-                    }
-                    addItem(scannedProduct, 1);
-                    toast.success(`+1 ${scannedProduct.name}`);
-                    if (onNavigate) onNavigate('pos');
-                  }}
-                  className="flex-1 py-2.5 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
-                >
-                  <Plus className="w-3.5 h-3.5" />
-                  <span>+ Masuk Kasir</span>
+                  <span>Scan Barang Berikutnya ({countdown}s)</span>
                 </button>
               </div>
             </div>
