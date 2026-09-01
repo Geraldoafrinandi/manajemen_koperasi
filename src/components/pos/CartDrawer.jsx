@@ -134,10 +134,10 @@ export const CartDrawer = ({ onProceedToPayment }) => {
           className={`w-full py-3.5 rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center space-x-2 transition-all shadow-xs cursor-pointer active:scale-98 ${
             items.length === 0
               ? 'bg-slate-100 text-slate-400 cursor-not-allowed border border-slate-200'
-              : 'bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white shadow-xs'
+              : 'bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white shadow-sm'
           }`}
         >
-          <span>Lanjut ke Pembayaran ({totalItems})</span>
+          <span>Bayar Sekarang ({totalItems})</span>
           <ArrowRight className="w-4 h-4" />
         </button>
       </div>

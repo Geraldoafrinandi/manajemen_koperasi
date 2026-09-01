@@ -31,24 +31,24 @@ export const ReportSettingsView = () => {
     institution: coopProfile.institution || 'Full Day School • Centre of Islamic Education Service',
     nopen: coopProfile.nopen || 'KOP-PERMATA-KITA/2026/08',
     address: coopProfile.address || 'Jl SMP 21 Padang',
-    city: coopProfile.city || 'Padang',
+    city: coopProfile.city || 'Kota Padang',
     postalCode: coopProfile.postalCode || '25164',
-    phone: coopProfile.phone || 'Belum ada data',
-    email: coopProfile.email || 'Belum ada data',
-    website: coopProfile.website || 'Belum ada data',
+    phone: coopProfile.phone || '-',
+    email: coopProfile.email || '-',
+    website: coopProfile.website || '-',
 
     // Pejabat Penandatangan Laporan Resmi
-    headName: coopProfile.headName || 'Kepala Koperasi',
+    headName: coopProfile.headName || 'Tidak Diketahui',
     headTitle: coopProfile.headTitle || 'Kepala Pengelola Koperasi',
-    headNip: coopProfile.headNip || 'Belum ada data',
+    headNip: coopProfile.headNip || '-',
 
-    treasurerName: coopProfile.treasurerName || 'Bendahara Sekolah',
+    treasurerName: coopProfile.treasurerName || 'Tidak Diketahui',
     treasurerTitle: coopProfile.treasurerTitle || 'Bendahara Koperasi',
-    treasurerNip: coopProfile.treasurerNip || 'Belum ada data',
+    treasurerNip: coopProfile.treasurerNip || '-',
 
-    principalName: coopProfile.principalName || 'Kepala Sekolah SD IT Permata',
+    principalName: coopProfile.principalName || 'Tidak Diketahui',
     principalTitle: coopProfile.principalTitle || 'Kepala Sekolah SD IT Permata',
-    principalNip: coopProfile.principalNip || 'Belum ada data',
+    principalNip: coopProfile.principalNip || '-',
 
     // Format Struk Kasir POS Thermal
     receiptFooter: coopProfile.receiptFooter || '*** TERIMA KASIH ***',
@@ -65,7 +65,7 @@ export const ReportSettingsView = () => {
     bankName: coopProfile.bankName || 'Bank Syariah Indonesia (BSI)',
     bankAccountNumber: coopProfile.bankAccountNumber || '7123456789',
     bankAccountHolder: coopProfile.bankAccountHolder || 'Koperasi SD IT Permata',
-    bankBranch: coopProfile.bankBranch || 'KC Bandar Lampung',
+    bankBranch: coopProfile.bankBranch || 'KC Padang',
 
     ewalletName: coopProfile.ewalletName || 'DANA / OVO / GoPay Koperasi',
     ewalletNumber: coopProfile.ewalletNumber || '0812-3456-7890',
@@ -238,7 +238,7 @@ export const ReportSettingsView = () => {
                 name="city"
                 value={formData.city}
                 onChange={handleChange}
-                placeholder="Bandar Lampung"
+                placeholder="Kota Padang"
                 required
                 className="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm text-slate-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600"
               />
@@ -253,6 +253,7 @@ export const ReportSettingsView = () => {
                 name="address"
                 value={formData.address}
                 onChange={handleChange}
+                placeholder="Jl SMP 21 Padang"
                 className="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm text-slate-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600"
               />
             </div>
@@ -266,6 +267,7 @@ export const ReportSettingsView = () => {
                 name="phone"
                 value={formData.phone}
                 onChange={handleChange}
+                placeholder="-"
                 className="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm text-slate-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600"
               />
             </div>
@@ -279,6 +281,7 @@ export const ReportSettingsView = () => {
                 name="email"
                 value={formData.email}
                 onChange={handleChange}
+                placeholder="-"
                 className="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm text-slate-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600"
               />
             </div>
@@ -306,14 +309,14 @@ export const ReportSettingsView = () => {
                     {formData.name || 'KOPERASI UNIT SEKOLAH "PERMATA KITA"'}
                   </h1>
                   <p className="text-[10px] text-zinc-700 pt-0.5 leading-tight">
-                    {formData.address || 'Jl. Permata Madani No. 45, Kompleks Islamic Centre'}, {formData.city || 'Bandar Lampung'}
+                    {formData.address || 'Jl SMP 21 Padang'}, {formData.city || 'Kota Padang'}
                   </p>
                   <p className="text-[10px] text-zinc-700 leading-tight">
-                    Telepon / Faks. {formData.phone || '(0721) 789123 / 0812-3456-7890'}
+                    Telepon / Faks. {formData.phone || '-'}
                   </p>
                   <div className="text-[9.5px] text-zinc-700 pt-0.5 flex items-center justify-center space-x-5 leading-tight">
-                    <span>Laman : {formData.website || 'https://www.permatakita.sch.id'}</span>
-                    <span>Surel : {formData.email || 'koperasi@permatakita.sch.id'}</span>
+                    <span>Laman : {formData.website || '-'}</span>
+                    <span>Surel : {formData.email || '-'}</span>
                   </div>
                 </div>
               </div>
@@ -357,7 +360,7 @@ export const ReportSettingsView = () => {
                   name="headName"
                   value={formData.headName}
                   onChange={handleChange}
-                  placeholder="Fatimah, S.Pd"
+                  placeholder="Nama Kepala Pengelola (Contoh: Nama Pejabat)"
                   className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs sm:text-sm font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600"
                 />
               </div>
@@ -370,7 +373,7 @@ export const ReportSettingsView = () => {
                   name="headNip"
                   value={formData.headNip}
                   onChange={handleChange}
-                  placeholder="19880920 201402 2 005"
+                  placeholder="NIP Pejabat (atau -)"
                   className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs sm:text-sm font-mono text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600"
                 />
               </div>
@@ -410,7 +413,7 @@ export const ReportSettingsView = () => {
                   name="treasurerName"
                   value={formData.treasurerName}
                   onChange={handleChange}
-                  placeholder="Ustadz Ahmad Fauzi, S.E"
+                  placeholder="Nama Bendahara (Contoh: Nama Pejabat)"
                   className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs sm:text-sm font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600"
                 />
               </div>
@@ -423,7 +426,7 @@ export const ReportSettingsView = () => {
                   name="treasurerNip"
                   value={formData.treasurerNip}
                   onChange={handleChange}
-                  placeholder="19850412 201101 1 003"
+                  placeholder="NIP Bendahara (atau -)"
                   className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs sm:text-sm font-mono text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600"
                 />
               </div>
@@ -457,20 +460,20 @@ export const ReportSettingsView = () => {
                 <div className="h-14 flex items-center justify-center text-slate-300 italic text-[11px] font-serif select-none">
                   ( Tanda Tangan Basah )
                 </div>
-                <p className="font-bold text-slate-900 underline">{formData.treasurerName || '(Nama Bendahara)'}</p>
+                <p className="font-bold text-slate-900 underline">{formData.treasurerName || 'Tidak Diketahui'}</p>
                 <p className="text-[10px] text-slate-500 font-mono mt-0.5">NIP: {formData.treasurerNip || '-'}</p>
               </div>
 
               {/* Kolom Kanan */}
               <div className="text-center min-w-[180px]">
                 <p className="text-[11px] text-slate-500">
-                  {formData.city || 'Bandar Lampung'}, {formatTanggal(new Date())}
+                  {formData.city || 'Kota Padang'}, {formatTanggal(new Date())}
                 </p>
                 <p className="font-bold text-slate-900">{formData.headTitle || 'Kepala Pengelola Koperasi'}</p>
                 <div className="h-14 flex items-center justify-center text-slate-300 italic text-[11px] font-serif select-none">
                   ( Tanda Tangan Basah )
                 </div>
-                <p className="font-bold text-slate-900 underline">{formData.headName || '(Nama Kepala)'}</p>
+                <p className="font-bold text-slate-900 underline">{formData.headName || 'Tidak Diketahui'}</p>
                 <p className="text-[10px] text-slate-500 font-mono mt-0.5">NIP: {formData.headNip || '-'}</p>
               </div>
             </div>
@@ -708,7 +711,7 @@ export const ReportSettingsView = () => {
                   name="bankBranch"
                   value={formData.bankBranch}
                   onChange={handleChange}
-                  placeholder="Contoh: KC Bandar Lampung"
+                  placeholder="Contoh: KC Padang"
                   className="w-full px-3.5 py-2 bg-white border border-slate-200 rounded-xl text-xs sm:text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600"
                 />
               </div>

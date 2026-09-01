@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Modal from '../common/Modal';
 import { useCart } from '../../context/CartContext';
 import { useAuth } from '../../context/AuthContext';
@@ -6,6 +6,7 @@ import { useProducts } from '../../context/ProductContext';
 import { useToast } from '../../context/ToastContext';
 import transactionService from '../../services/transactionService';
 import { formatRupiah, formatThousand, parseThousand } from '../../utils/formatters';
+import { soundManager } from '../../utils/audioFeedback';
 import {
   Banknote,
   QrCode,
@@ -33,6 +34,7 @@ export const PaymentModal = ({ isOpen, onClose, onTransactionComplete }) => {
   const [cashPaid, setCashPaid] = useState('');
   const [showDiscountField, setShowDiscountField] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
+  const cashInputRef = useRef(null);
 
   const quickCashPresets = [
     { label: 'Uang Pas', value: grandTotal },
@@ -47,12 +49,19 @@ export const PaymentModal = ({ isOpen, onClose, onTransactionComplete }) => {
       setCashPaid('');
       setPaymentMethod('Cash');
       setShowDiscountField(Boolean(discount > 0));
+      setTimeout(() => {
+        if (cashInputRef.current) {
+          cashInputRef.current.focus();
+        }
+      }, 80);
     }
   }, [isOpen]);
 
   const cashPaidNum = parseThousand(cashPaid);
   const change = Math.max(0, cashPaidNum - grandTotal);
-  const isCashInsufficient = paymentMethod === 'Cash' && cashPaidNum < grandTotal;
+  const isCashEmpty = paymentMethod === 'Cash' && cashPaid.trim() === '';
+  const isCashInsufficient =
+    paymentMethod === 'Cash' && (cashPaid.trim() === '' || cashPaidNum < grandTotal);
 
   const handleDiscountChange = (val) => {
     const num = Math.min(subtotal, Math.max(0, parseThousand(val)));
@@ -60,12 +69,25 @@ export const PaymentModal = ({ isOpen, onClose, onTransactionComplete }) => {
   };
 
   const handleProcessCheckout = async () => {
-    if (items.length === 0) return;
+    if (items.length === 0 || isProcessing) return;
 
-    if (paymentMethod === 'Cash' && cashPaidNum < grandTotal) {
-      toast.error('Nominal uang tunai yang dimasukkan masih kurang.');
-      return;
+    if (paymentMethod === 'Cash') {
+      if (cashPaid.trim() === '') {
+        soundManager.playErrorBeep();
+        toast.error('Silakan ketik nominal uang tunai yang diterima terlebih dahulu.');
+        if (cashInputRef.current) cashInputRef.current.focus();
+        return;
+      }
+
+      if (cashPaidNum < grandTotal) {
+        soundManager.playErrorBeep();
+        toast.error(`Nominal uang tunai kurang ${formatRupiah(grandTotal - cashPaidNum)}.`);
+        if (cashInputRef.current) cashInputRef.current.focus();
+        return;
+      }
     }
+
+    const finalPaid = paymentMethod === 'Cash' ? cashPaidNum : grandTotal;
 
     setIsProcessing(true);
     try {
@@ -73,11 +95,12 @@ export const PaymentModal = ({ isOpen, onClose, onTransactionComplete }) => {
         items,
         discount: Number(discount) || 0,
         paymentMethod,
-        cashPaid: paymentMethod === 'Cash' ? cashPaidNum : grandTotal,
+        cashPaid: finalPaid,
         grandTotal,
         cashier: user,
       });
 
+      soundManager.playSuccessChime();
       toast.success('Pembayaran berhasil diselesaikan.');
       clearCart();
       if (refreshProducts) {
@@ -88,11 +111,38 @@ export const PaymentModal = ({ isOpen, onClose, onTransactionComplete }) => {
         onTransactionComplete(transaction);
       }
     } catch (error) {
+      soundManager.playErrorBeep();
       toast.error(error.message || 'Gagal memproses transaksi.');
     } finally {
       setIsProcessing(false);
     }
   };
+
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const handleKeyDown = (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        handleProcessCheckout();
+      } else if (e.key === 'Escape') {
+        e.preventDefault();
+        onClose();
+      } else if (e.key === 'F2') {
+        e.preventDefault();
+        setPaymentMethod('Cash');
+      } else if (e.key === 'F4') {
+        e.preventDefault();
+        setPaymentMethod('QRIS');
+      } else if (e.key === 'F5') {
+        e.preventDefault();
+        setPaymentMethod('Transfer');
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, cashPaid, paymentMethod, grandTotal, items, isProcessing]);
 
   return (
     <Modal
@@ -197,12 +247,15 @@ export const PaymentModal = ({ isOpen, onClose, onTransactionComplete }) => {
             <div>
               <div className="flex justify-between items-center mb-1">
                 <label className="text-xs font-bold text-slate-800">
-                  Uang Tunai Diterima
+                  Uang Tunai Diterima (Rp)
                 </label>
                 {cashPaid && (
                   <button
                     type="button"
-                    onClick={() => setCashPaid('')}
+                    onClick={() => {
+                      setCashPaid('');
+                      if (cashInputRef.current) cashInputRef.current.focus();
+                    }}
                     className="text-[10.5px] text-emerald-700 hover:text-emerald-800 font-semibold cursor-pointer"
                   >
                     Reset
@@ -215,7 +268,10 @@ export const PaymentModal = ({ isOpen, onClose, onTransactionComplete }) => {
                   <button
                     key={idx}
                     type="button"
-                    onClick={() => setCashPaid(formatThousand(preset.value))}
+                    onClick={() => {
+                      setCashPaid(formatThousand(preset.value));
+                      if (cashInputRef.current) cashInputRef.current.focus();
+                    }}
                     className={`px-2.5 py-1 rounded-lg text-[11px] font-mono font-bold border transition-all cursor-pointer ${
                       cashPaidNum === preset.value
                         ? 'bg-emerald-600 text-white border-emerald-600 shadow-2xs'
@@ -232,13 +288,13 @@ export const PaymentModal = ({ isOpen, onClose, onTransactionComplete }) => {
                   Rp
                 </span>
                 <input
+                  ref={cashInputRef}
                   type="text"
                   inputMode="numeric"
-                  autoFocus
                   value={cashPaid}
                   onChange={(e) => setCashPaid(formatThousand(parseThousand(e.target.value)))}
-                  placeholder="0"
-                  className="w-full pl-10 pr-3 py-2 bg-slate-50/50 border border-slate-200 rounded-xl text-base font-bold text-slate-900 font-mono focus:bg-white focus:outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-500/20 transition-all placeholder:text-slate-300"
+                  placeholder="Ketik jumlah uang diterima"
+                  className="w-full pl-10 pr-3 py-2 bg-slate-50/50 border border-slate-200 rounded-xl text-base font-bold text-slate-900 font-mono focus:bg-white focus:outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-500/20 transition-all placeholder:text-slate-400"
                 />
               </div>
             </div>
@@ -249,14 +305,16 @@ export const PaymentModal = ({ isOpen, onClose, onTransactionComplete }) => {
               </span>
               <span
                 className={`text-base font-black font-mono tracking-tight ${
-                  isCashInsufficient
+                  isCashEmpty
+                    ? 'text-slate-400'
+                    : cashPaidNum < grandTotal
                     ? 'text-rose-600'
-                    : cashPaidNum >= grandTotal
-                    ? 'text-emerald-700'
-                    : 'text-slate-400'
+                    : 'text-emerald-700'
                 }`}
               >
-                {isCashInsufficient
+                {isCashEmpty
+                  ? 'Rp 0'
+                  : cashPaidNum < grandTotal
                   ? `Kurang ${formatRupiah(grandTotal - cashPaidNum)}`
                   : formatRupiah(change)}
               </span>
@@ -292,7 +350,7 @@ export const PaymentModal = ({ isOpen, onClose, onTransactionComplete }) => {
             disabled={isProcessing}
             className="w-full py-1 text-center text-xs font-semibold text-slate-400 hover:text-slate-700 transition-colors cursor-pointer"
           >
-            Batal
+            Batal (Esc)
           </button>
         </div>
       </div>

@@ -119,7 +119,24 @@ class StorageService {
   }
 
   getCoopProfile() {
-    return this.getItem(KEYS.PROFILE, INITIAL_COOP_PROFILE);
+    const profile = this.getItem(KEYS.PROFILE, INITIAL_COOP_PROFILE);
+    if (profile) {
+      if (profile.headName === 'Ustadzah Fatimah, S.Pd') profile.headName = 'Tidak Diketahui';
+      if (profile.treasurerName === 'Ustadz Ahmad Fauzi, S.E') profile.treasurerName = 'Tidak Diketahui';
+      if (profile.principalName === 'Ustadz Muhammad Irfan, M.Pd') profile.principalName = 'Tidak Diketahui';
+      if (profile.headNip === '19880920 201402 2 005') profile.headNip = '-';
+      if (profile.treasurerNip === '19850412 201101 1 003') profile.treasurerNip = '-';
+      if (profile.principalNip === '19790105 200501 1 003') profile.principalNip = '-';
+      if (profile.address === 'Jl. Permata Madani No. 45, Kompleks Islamic Centre') profile.address = 'Jl SMP 21 Padang';
+      if (profile.city === 'Bandar Lampung') profile.city = 'Kota Padang';
+      if (profile.postalCode === '35144') profile.postalCode = '25164';
+      if (profile.phone === '(0721) 789123 / 0812-3456-7890') profile.phone = '-';
+      if (profile.email === 'koperasi@permatakita.sch.id') profile.email = '-';
+      if (profile.website === 'www.permatakita.sch.id') profile.website = '-';
+      if (profile.receiptHeaderAddress === 'Jl. Permata Madani No. 45, Bandar Lampung') profile.receiptHeaderAddress = 'Jl SMP 21 Padang, Kota Padang';
+      if (profile.receiptHeaderPhone === '(0721) 789123 / 0812-3456-7890') profile.receiptHeaderPhone = '-';
+    }
+    return profile;
   }
 
   setCoopProfile(profile) {

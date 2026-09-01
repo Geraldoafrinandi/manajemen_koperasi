@@ -33,9 +33,22 @@ class AuthService {
       sessionStorage.setItem(SESSION_KEYS.TOKEN, token);
     }
 
-    const rawRole = (userData.role || '').toLowerCase();
-    const role = rawRole.includes('admin') ? 'admin' : 'cashier';
-    const displayName = userData.name || (role === 'admin' ? 'Admin Koperasi' : 'Kasir');
+    const rawRole = (userData.role || '').toLowerCase().trim();
+    let role = 'kasir';
+    if (rawRole === 'super_admin' || rawRole === 'superadmin' || rawRole === 'super admin' || rawRole.includes('super')) {
+      role = 'super_admin';
+    } else if (rawRole === 'admin') {
+      role = 'admin';
+    } else {
+      role = 'kasir';
+    }
+
+    const displayName = userData.name || (
+      role === 'super_admin' ? 'Super Admin' :
+      role === 'admin' ? 'Admin Koperasi' :
+      'Kasir'
+    );
+
     const user = {
       id: userData.id || userData.user_id || `usr-${Date.now()}`,
       name: displayName,
@@ -107,29 +120,45 @@ class AuthService {
     }
     const u = storageService.getCurrentUser();
     if (u && (u.name?.toLowerCase().includes('ustadz') || u.name?.toLowerCase().includes('fatimah') || u.name === 'Admin' || u.name === 'Administrator')) {
-      u.name = u.role === 'admin' ? 'Admin Koperasi' : 'Kasir';
+      if (u.role === 'super_admin' || u.role === 'superadmin') {
+        u.name = 'Super Admin';
+      } else if (u.role === 'admin') {
+        u.name = 'Admin Koperasi';
+      } else {
+        u.name = 'Kasir';
+      }
       storageService.setCurrentUser(u);
     }
     return u;
   }
 
+  isSuperAdmin() {
+    const user = this.getCurrentUser();
+    return Boolean(user && (user.role === 'super_admin' || user.role === 'superadmin' || user.role === 'super admin'));
+  }
+
   isAdmin() {
     const user = this.getCurrentUser();
-    return user && user.role === 'admin';
+    return Boolean(user && (user.role === 'admin' || user.role === 'super_admin' || user.role === 'superadmin' || user.role === 'super admin'));
   }
 
   isCashier() {
     const user = this.getCurrentUser();
-    return user && (user.role === 'cashier' || user.role === 'kasir');
+    return Boolean(user && (user.role === 'cashier' || user.role === 'kasir'));
+  }
+
+  canManageUsers() {
+    return this.isSuperAdmin();
   }
 
   switchRole(targetRole) {
     const user = this.getCurrentUser();
     if (user) {
+      const defaultName = targetRole === 'super_admin' ? 'Super Admin' : targetRole === 'admin' ? 'Admin Koperasi' : 'Kasir';
       const updated = {
         ...user,
         role: targetRole,
-        name: targetRole === 'admin' ? 'Admin Koperasi' : 'Kasir',
+        name: defaultName,
       };
       storageService.setCurrentUser(updated);
       return updated;

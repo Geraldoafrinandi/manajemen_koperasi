@@ -10,6 +10,7 @@ import {
   AlertTriangle,
   ChevronDown,
   Shield,
+  ShieldCheck,
   User,
   Settings,
   RotateCcw,
@@ -37,7 +38,7 @@ const formatRelativeTime = (isoString) => {
 };
 
 export const Navbar = ({ onNavigate, currentView, onToggleMobileMenu, isMobileMenuOpen }) => {
-  const { user, logout, isAdmin, isCashier } = useAuth();
+  const { user, logout, isAdmin, isSuperAdmin, isCashier } = useAuth();
   const {
     lowStockList,
     outOfStockList,
@@ -332,15 +333,32 @@ export const Navbar = ({ onNavigate, currentView, onToggleMobileMenu, isMobileMe
               }}
               className="flex items-center space-x-2 px-2.5 sm:px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200/80 border border-slate-200 text-slate-700 transition-colors cursor-pointer"
             >
-              <div className="w-7 h-7 rounded-lg bg-emerald-600 text-white flex items-center justify-center text-xs font-bold shadow-xs">
-                {isAdmin ? <Shield className="w-4 h-4" /> : <User className="w-4 h-4" />}
+              <div
+                className={`w-7 h-7 rounded-lg text-white flex items-center justify-center text-xs font-bold shadow-xs ${isSuperAdmin
+                    ? 'bg-purple-700'
+                    : isAdmin
+                      ? 'bg-emerald-600'
+                      : 'bg-blue-600'
+                  }`}
+              >
+                {isSuperAdmin ? (
+                  <ShieldCheck className="w-4 h-4" />
+                ) : isAdmin ? (
+                  <Shield className="w-4 h-4" />
+                ) : (
+                  <User className="w-4 h-4" />
+                )}
               </div>
               <div className="text-left hidden sm:block">
                 <p className="text-xs font-bold text-slate-800 leading-tight truncate max-w-[130px]">
-                  {isAdmin ? 'Admin Koperasi' : (user?.name || user?.username || 'Kasir')}
+                  {user?.name || (isSuperAdmin ? 'Super Admin' : isAdmin ? 'Admin Koperasi' : 'Kasir')}
                 </p>
                 <p className="text-[10px] font-semibold text-slate-500 uppercase tracking-wide">
-                  {isAdmin ? 'Admin Koperasi' : 'Petugas Kasir'}
+                  {isSuperAdmin
+                    ? 'Super Admin'
+                    : isAdmin
+                      ? 'Admin (Monitoring)'
+                      : 'Petugas Kasir'}
                 </p>
               </div>
               <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
@@ -352,16 +370,28 @@ export const Navbar = ({ onNavigate, currentView, onToggleMobileMenu, isMobileMe
                 {/* Account Details Header */}
                 <div className="px-3 py-2.5 bg-slate-50 rounded-xl mb-1.5 border border-slate-100">
                   <p className="text-xs font-bold text-slate-900 truncate">
-                    {user?.name || 'Pengguna'}
+                    {user?.name || (isSuperAdmin ? 'Super Admin' : isAdmin ? 'Admin Koperasi' : 'Pengguna')}
                   </p>
                   <p className="text-[11px] font-mono text-slate-500 mt-0.5">
                     @{user?.username || 'user'}
                   </p>
                   <div className="mt-1.5">
-                    <span className="inline-flex items-center gap-1 text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-800 border border-emerald-200">
-                      <CheckCircle2 className="w-2.5 h-2.5 text-emerald-600" />
-                      {isAdmin ? 'Admin Koperasi' : 'Kasir POS'}
-                    </span>
+                    {isSuperAdmin ? (
+                      <span className="inline-flex items-center gap-1 text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-md bg-purple-100 text-purple-800 border border-purple-200">
+                        <ShieldCheck className="w-2.5 h-2.5 text-purple-600" />
+                        Super Admin (Full Akses)
+                      </span>
+                    ) : isAdmin ? (
+                      <span className="inline-flex items-center gap-1 text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-800 border border-emerald-200">
+                        <Shield className="w-2.5 h-2.5 text-emerald-600" />
+                        Admin (Monitoring)
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center gap-1 text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-md bg-blue-100 text-blue-800 border border-blue-200">
+                        <CheckCircle2 className="w-2.5 h-2.5 text-blue-600" />
+                        Kasir
+                      </span>
+                    )}
                   </div>
                 </div>
 

@@ -13,16 +13,12 @@ import { formatRupiah } from '../../utils/formatters';
 import {
   ShoppingBag,
   ShoppingCart,
-  QrCode,
-  Sparkles,
-  User,
   Clock,
   CheckCircle2,
   Bell,
   Barcode,
   ScanLine,
   ArrowRight,
-  RotateCcw,
 } from 'lucide-react';
 
 export const PosView = ({ onNavigate }) => {
@@ -49,11 +45,44 @@ export const PosView = ({ onNavigate }) => {
     return () => clearInterval(timer);
   }, []);
 
-  const timeFormatted = currentTime.toLocaleTimeString('id-ID', {
-    hour: '2-digit',
-    minute: '2-digit',
-    second: '2-digit',
-  }) + ' WIB';
+  const timeFormatted =
+    currentTime.toLocaleTimeString('id-ID', {
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+    }) + ' WIB';
+
+  useEffect(() => {
+    const handlePosKeyDown = (e) => {
+      const isModalOpen =
+        isPaymentModalOpen ||
+        isReceiptModalOpen ||
+        isCameraScannerOpen ||
+        isManualAddOpen ||
+        isMobileCartOpen;
+
+      if (isModalOpen) return;
+
+      const activeTag = document.activeElement ? document.activeElement.tagName.toLowerCase() : '';
+      const isInputFocused =
+        activeTag === 'input' || activeTag === 'textarea' || activeTag === 'select';
+
+      if ((e.key === 'Enter' || e.key === 'F2') && !isInputFocused && items.length > 0) {
+        e.preventDefault();
+        setIsPaymentModalOpen(true);
+      }
+    };
+
+    window.addEventListener('keydown', handlePosKeyDown);
+    return () => window.removeEventListener('keydown', handlePosKeyDown);
+  }, [
+    items.length,
+    isPaymentModalOpen,
+    isReceiptModalOpen,
+    isCameraScannerOpen,
+    isManualAddOpen,
+    isMobileCartOpen,
+  ]);
 
   const handleScanSuccess = (barcodeText) => {
     addItemByBarcode(barcodeText);

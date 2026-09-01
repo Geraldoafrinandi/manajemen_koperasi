@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import jsPDF from 'jspdf';
 import Modal from '../common/Modal';
 import { useProducts } from '../../context/ProductContext';
@@ -13,6 +13,31 @@ export const ReceiptModal = ({ isOpen, onClose, transaction, onNewTransaction })
   const toast = useToast();
   const receiptRef = useRef(null);
   const [paperWidth, setPaperWidth] = useState(58);
+
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const handleKeyDown = (e) => {
+      if (e.key === 'Enter' || e.key === ' ' || e.key === 'F1') {
+        e.preventDefault();
+        onClose();
+        if (onNewTransaction) onNewTransaction();
+      } else if ((e.key === 'p' || e.key === 'P' || e.key === 'F8') && !e.ctrlKey && !e.metaKey) {
+        e.preventDefault();
+        handlePrint();
+      } else if ((e.key === 'd' || e.key === 'D') && !e.ctrlKey && !e.metaKey) {
+        e.preventDefault();
+        handleDownloadPdf();
+      } else if (e.key === 'Escape') {
+        e.preventDefault();
+        onClose();
+        if (onNewTransaction) onNewTransaction();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, onClose, onNewTransaction, transaction, coopProfile, paperWidth]);
 
   if (!transaction) return null;
 
@@ -52,7 +77,7 @@ export const ReceiptModal = ({ isOpen, onClose, transaction, onNewTransaction })
 
       const headerTitle = coopProfile.receiptHeaderTitle || coopProfile.name || 'KOPERASI SD IT PERMATA';
       const headerSubtitle = coopProfile.receiptHeaderSubtitle || coopProfile.institution || 'Full Day School • Koperasi';
-      const headerAddress = coopProfile.receiptHeaderAddress || coopProfile.address || 'Bandar Lampung';
+      const headerAddress = coopProfile.receiptHeaderAddress || coopProfile.address || 'Jl SMP 21 Padang, Kota Padang';
       const headerPhone = coopProfile.receiptHeaderPhone || coopProfile.phone || '-';
 
       const centerX = pdfWidth / 2;
@@ -136,7 +161,7 @@ export const ReceiptModal = ({ isOpen, onClose, transaction, onNewTransaction })
 
       doc.save(`Struk_${transaction.invoiceNumber}.pdf`);
       toast.success(`Struk ${transaction.invoiceNumber} berhasil diunduh format PDF.`);
-    } catch (e) {
+    } catch {
       toast.error('Gagal membuat file PDF struk.');
     }
   };
@@ -145,45 +170,44 @@ export const ReceiptModal = ({ isOpen, onClose, transaction, onNewTransaction })
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title="Struk Bukti Pembayaran"
-      subtitle="Struk otomatis diformat khusus kertas thermal roll (58mm / 80mm)"
+      title="Transaksi Selesai"
+      subtitle="Transaksi berhasil disimpan ke sistem"
       maxWidth="max-w-sm"
     >
-      <div className="space-y-3.5">
-        {/* Paper Size Selector (58mm vs 80mm) */}
+      <div className="space-y-3 pt-0.5">
         <div className="flex items-center justify-between p-2 rounded-xl bg-slate-100/80 border border-slate-200 text-xs">
-          <span className="font-bold text-slate-700 pl-1">Ukuran Kertas:</span>
+          <span className="font-bold text-slate-700 pl-1 text-[11px]">Ukuran Kertas:</span>
           <div className="flex items-center space-x-1">
             <button
               type="button"
               onClick={() => setPaperWidth(58)}
-              className={`px-2.5 py-1 rounded-lg font-bold text-[11px] transition-all cursor-pointer ${paperWidth === 58
-                ? 'bg-emerald-600 text-white shadow-2xs'
-                : 'bg-white text-slate-600 hover:bg-slate-200 border border-slate-200'
-                }`}
+              className={`px-2.5 py-1 rounded-lg font-bold text-[11px] transition-all cursor-pointer ${
+                paperWidth === 58
+                  ? 'bg-slate-800 text-white shadow-2xs'
+                  : 'bg-white text-slate-600 hover:bg-slate-200 border border-slate-200'
+              }`}
             >
-              58mm (Standar Roll)
+              58mm (Standar)
             </button>
             <button
               type="button"
               onClick={() => setPaperWidth(80)}
-              className={`px-2.5 py-1 rounded-lg font-bold text-[11px] transition-all cursor-pointer ${paperWidth === 80
-                ? 'bg-emerald-600 text-white shadow-2xs'
-                : 'bg-white text-slate-600 hover:bg-slate-200 border border-slate-200'
-                }`}
+              className={`px-2.5 py-1 rounded-lg font-bold text-[11px] transition-all cursor-pointer ${
+                paperWidth === 80
+                  ? 'bg-slate-800 text-white shadow-2xs'
+                  : 'bg-white text-slate-600 hover:bg-slate-200 border border-slate-200'
+              }`}
             >
               80mm (Lebar)
             </button>
           </div>
         </div>
 
-        {/* Visual Thermal Receipt Preview */}
         <div
           ref={receiptRef}
-          style={{ width: paperWidth === 58 ? '100%' : '100%' }}
-          className="bg-slate-50/90 p-4 rounded-xl border border-slate-200 font-mono text-xs text-slate-900 shadow-2xs space-y-2.5"
+          style={{ width: '100%' }}
+          className="bg-slate-50/90 p-4 rounded-xl border border-slate-200 font-mono text-xs text-slate-900 shadow-2xs space-y-2.5 max-h-[42vh] overflow-y-auto"
         >
-          {/* Receipt Header with Logo */}
           <div className="text-center space-y-0.5 flex flex-col items-center">
             {coopProfile.receiptShowLogo !== false && (
               <PermataLogo variant="icon" size="sm" />
@@ -195,7 +219,7 @@ export const ReceiptModal = ({ isOpen, onClose, transaction, onNewTransaction })
               {coopProfile.receiptHeaderSubtitle || coopProfile.institution || 'Full Day School • Koperasi'}
             </p>
             <p className="text-[8.5px] text-slate-400">
-              {coopProfile.receiptHeaderAddress || coopProfile.address || 'Bandar Lampung'}
+              {coopProfile.receiptHeaderAddress || coopProfile.address || 'Jl SMP 21 Padang, Kota Padang'}
             </p>
             {coopProfile.receiptHeaderPhone && (
               <p className="text-[8.5px] text-slate-400">
@@ -260,7 +284,7 @@ export const ReceiptModal = ({ isOpen, onClose, transaction, onNewTransaction })
             </div>
             <div className="flex justify-between font-bold text-slate-900">
               <span>Kembalian:</span>
-              <span>{formatRupiah(change)}</span>
+              <span className="text-emerald-700 font-mono font-black">{formatRupiah(change)}</span>
             </div>
           </div>
 
@@ -278,36 +302,39 @@ export const ReceiptModal = ({ isOpen, onClose, transaction, onNewTransaction })
           </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-2 pt-0.5">
+        <div className="space-y-2 pt-1">
+          <div className="grid grid-cols-2 gap-2">
+            <button
+              type="button"
+              onClick={handlePrint}
+              className="py-2.5 px-3 bg-white hover:bg-slate-100 text-slate-800 border border-slate-300 rounded-xl text-xs font-bold flex items-center justify-center space-x-1.5 transition-colors shadow-2xs cursor-pointer active:scale-98"
+            >
+              <Printer className="w-4 h-4 text-slate-600" />
+              <span>Cetak Struk</span>
+            </button>
+            <button
+              type="button"
+              onClick={handleDownloadPdf}
+              className="py-2.5 px-3 bg-white hover:bg-slate-100 text-slate-800 border border-slate-300 rounded-xl text-xs font-bold flex items-center justify-center space-x-1.5 transition-colors shadow-2xs cursor-pointer active:scale-98"
+            >
+              <Download className="w-4 h-4 text-slate-600" />
+              <span>Download PDF</span>
+            </button>
+          </div>
+
           <button
             type="button"
-            onClick={handlePrint}
-            className="py-2.5 px-3 bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white rounded-xl text-xs font-bold flex items-center justify-center space-x-1.5 transition-colors shadow-xs cursor-pointer"
+            autoFocus
+            onClick={() => {
+              onClose();
+              if (onNewTransaction) onNewTransaction();
+            }}
+            className="w-full py-3 bg-slate-900 hover:bg-slate-800 active:bg-slate-950 text-white rounded-xl text-xs sm:text-sm font-bold flex items-center justify-center space-x-2 transition-all shadow-xs cursor-pointer active:scale-98"
           >
-            <Printer className="w-4 h-4" />
-            <span>Cetak Struk</span>
-          </button>
-          <button
-            type="button"
-            onClick={handleDownloadPdf}
-            className="py-2.5 px-3 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 rounded-xl text-xs font-bold flex items-center justify-center space-x-1.5 transition-colors shadow-xs cursor-pointer"
-          >
-            <Download className="w-4 h-4 text-slate-500" />
-            <span>Download PDF</span>
+            <Plus className="w-4 h-4" />
+            <span>Mulai Transaksi Selanjutnya</span>
           </button>
         </div>
-
-        <button
-          type="button"
-          onClick={() => {
-            onClose();
-            if (onNewTransaction) onNewTransaction();
-          }}
-          className="w-full py-2.5 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-bold flex items-center justify-center space-x-1.5 transition-colors shadow-xs cursor-pointer"
-        >
-          <Plus className="w-4 h-4" />
-          <span>Mulai Transaksi Baru</span>
-        </button>
       </div>
     </Modal>
   );

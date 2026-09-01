@@ -77,8 +77,13 @@ export const AuthProvider = ({ children }) => {
     return switchedUser;
   };
 
-  const isAdmin = user?.role === 'admin';
-  const isCashier = user?.role === 'cashier';
+  const isSuperAdmin = Boolean(
+    user && (user.role === 'super_admin' || user.role === 'superadmin' || user.role === 'super admin')
+  );
+  const isOnlyAdmin = Boolean(user && user.role === 'admin');
+  const isAdmin = Boolean(isSuperAdmin || isOnlyAdmin);
+  const isCashier = Boolean(user && (user.role === 'cashier' || user.role === 'kasir'));
+  const canManageUsers = isSuperAdmin;
 
   return (
     <AuthContext.Provider
@@ -88,8 +93,11 @@ export const AuthProvider = ({ children }) => {
         login,
         logout,
         switchRole,
+        isSuperAdmin,
+        isOnlyAdmin,
         isAdmin,
         isCashier,
+        canManageUsers,
         isAuthenticated: !!user,
       }}
     >

@@ -23,10 +23,15 @@ import {
   CheckCircle2,
   RefreshCw,
   Database,
+  Shield,
+  ShieldCheck,
+  ShieldAlert,
+  Lock,
+  User,
 } from 'lucide-react';
 
 export const SettingsView = () => {
-  const { user: currentAuthUser } = useAuth();
+  const { user: currentAuthUser, isSuperAdmin, isOnlyAdmin, canManageUsers } = useAuth();
   const { coopProfile, updateCoopProfile, refreshProducts } = useProducts();
   const toast = useToast();
 
@@ -36,29 +41,29 @@ export const SettingsView = () => {
     name: coopProfile.name || 'KOPERASI PERMATA KITA',
     institution: coopProfile.institution || 'Full Day School • Centre of Islamic Education Service',
     nopen: coopProfile.nopen || 'KOP-PERMATA-KITA/2026/08',
-    address: coopProfile.address || 'Jl. Permata Madani No. 45, Kompleks Islamic Centre',
-    city: coopProfile.city || 'Bandar Lampung',
-    postalCode: coopProfile.postalCode || '35144',
-    phone: coopProfile.phone || '(0721) 789123 / 0812-3456-7890',
-    email: coopProfile.email || 'koperasi@permatakita.sch.id',
-    website: coopProfile.website || 'www.permatakita.sch.id',
+    address: coopProfile.address || 'Jl SMP 21 Padang',
+    city: coopProfile.city || 'Kota Padang',
+    postalCode: coopProfile.postalCode || '25164',
+    phone: coopProfile.phone || '-',
+    email: coopProfile.email || '-',
+    website: coopProfile.website || '-',
 
-    headName: coopProfile.headName || 'Ustadzah Fatimah, S.Pd',
+    headName: coopProfile.headName || 'Tidak Diketahui',
     headTitle: coopProfile.headTitle || 'Kepala Pengelola Koperasi',
-    headNip: coopProfile.headNip || '19880920 201402 2 005',
+    headNip: coopProfile.headNip || '-',
 
-    treasurerName: coopProfile.treasurerName || 'Ustadz Ahmad Fauzi, S.E',
+    treasurerName: coopProfile.treasurerName || 'Tidak Diketahui',
     treasurerTitle: coopProfile.treasurerTitle || 'Bendahara Koperasi',
-    treasurerNip: coopProfile.treasurerNip || '19850412 201101 1 003',
+    treasurerNip: coopProfile.treasurerNip || '-',
 
-    principalName: coopProfile.principalName || 'Ustadz Muhammad Irfan, M.Pd',
+    principalName: coopProfile.principalName || 'Tidak Diketahui',
     principalTitle: coopProfile.principalTitle || 'Kepala Sekolah SD IT Permata',
-    principalNip: coopProfile.principalNip || '19790105 200501 1 003',
+    principalNip: coopProfile.principalNip || '-',
 
     receiptHeaderTitle: coopProfile.receiptHeaderTitle || coopProfile.name || 'KOPERASI PERMATA KITA',
     receiptHeaderSubtitle: coopProfile.receiptHeaderSubtitle || 'Full Day School • Koperasi',
-    receiptHeaderAddress: coopProfile.receiptHeaderAddress || coopProfile.address || 'Jl. Permata Madani No. 45, Bandar Lampung',
-    receiptHeaderPhone: coopProfile.receiptHeaderPhone || coopProfile.phone || '(0721) 789123 / 0812-3456-7890',
+    receiptHeaderAddress: coopProfile.receiptHeaderAddress || coopProfile.address || 'Jl SMP 21 Padang, Kota Padang',
+    receiptHeaderPhone: coopProfile.receiptHeaderPhone || coopProfile.phone || '-',
     receiptShowLogo: coopProfile.receiptShowLogo !== false,
     receiptFooter: coopProfile.receiptFooter || '*** TERIMA KASIH ***',
     receiptPolicy: coopProfile.receiptPolicy || '',
@@ -161,6 +166,10 @@ export const SettingsView = () => {
   // User Actions: Tambah
   const handleCreateUser = async (e) => {
     e.preventDefault();
+    if (!isSuperAdmin) {
+      toast.error('Akses Ditolak: Hanya Super Admin yang berwenang menambahkan akun baru.');
+      return;
+    }
     if (!newUserData.name || !newUserData.username || !newUserData.password) {
       toast.error('Semua data pengguna wajib diisi.');
       return;
@@ -179,6 +188,10 @@ export const SettingsView = () => {
 
   // User Actions: Edit
   const handleOpenEditUser = (u) => {
+    if (!isSuperAdmin) {
+      toast.error('Akses Ditolak: Hanya Super Admin yang berwenang mengubah akun pengguna.');
+      return;
+    }
     setEditingUser(u);
     setEditUserData({
       name: u.name || '',
@@ -189,6 +202,10 @@ export const SettingsView = () => {
 
   const handleSaveEditUser = async (e) => {
     e.preventDefault();
+    if (!isSuperAdmin) {
+      toast.error('Akses Ditolak: Hanya Super Admin yang berwenang mengubah akun pengguna.');
+      return;
+    }
     if (!editUserData.name || !editUserData.username) {
       toast.error('Nama dan username wajib diisi.');
       return;
@@ -207,6 +224,10 @@ export const SettingsView = () => {
   // User Actions: Ganti Password
   const handleUpdatePassword = async (e) => {
     e.preventDefault();
+    if (!isSuperAdmin) {
+      toast.error('Akses Ditolak: Hanya Super Admin yang berwenang mengganti password akun pengguna.');
+      return;
+    }
     if (!newPasswordInput || !selectedUserForPassword) return;
 
     try {
@@ -224,6 +245,11 @@ export const SettingsView = () => {
   // User Actions: Hapus
   const handleConfirmDeleteUser = async () => {
     if (!userToDelete) return;
+    if (!isSuperAdmin) {
+      toast.error('Akses Ditolak: Hanya Super Admin yang berwenang menghapus akun pengguna.');
+      setUserToDelete(null);
+      return;
+    }
 
     if (
       currentAuthUser &&
@@ -245,8 +271,20 @@ export const SettingsView = () => {
     }
   };
 
+  const displayedUsers = isSuperAdmin
+    ? usersList
+    : usersList.filter((u) => {
+      const r = (u.role || '').toLowerCase().trim();
+      return r === 'kasir' || r === 'cashier';
+    });
+
   const tabs = [
-    { id: 'users', label: '1. Akun Staf Kasir', icon: Users, badge: usersList.length },
+    {
+      id: 'users',
+      label: isSuperAdmin ? '1. Akun Pengguna & Kasir' : '1. Akun Staf Kasir',
+      icon: Users,
+      badge: displayedUsers.length,
+    },
     { id: 'kop_signatures', label: '2. Kop Surat & Tanda Tangan', icon: Building },
     { id: 'receipt', label: '3. Struk Kasir POS', icon: Printer },
     { id: 'database', label: '4. Sinkronisasi Database', icon: Database },
@@ -307,29 +345,67 @@ export const SettingsView = () => {
               <div className="flex items-center space-x-2">
                 <Users className="w-5 h-5 text-emerald-600" />
                 <div>
-                  <h3 className="text-sm font-bold text-slate-900">
-                    1. Manajemen Akun Pengguna & Kasir
-                  </h3>
+                  <div className="flex items-center space-x-2 flex-wrap gap-y-1">
+                    <h3 className="text-sm font-bold text-slate-900">
+                      {isSuperAdmin ? '1. Manajemen Akun Pengguna & Kasir' : '1. Daftar Akun Staf Kasir'}
+                    </h3>
+                    {isSuperAdmin ? (
+                      <span className="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-purple-100 text-purple-800 border border-purple-200 inline-flex items-center gap-1">
+                        <ShieldCheck className="w-3 h-3 text-purple-600" />
+                        Super Admin: Full Akses & Kelola Akun
+                      </span>
+                    ) : (
+                      <span className="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-amber-100 text-amber-800 border border-amber-200 inline-flex items-center gap-1">
+                        <ShieldAlert className="w-3 h-3 text-amber-600" />
+                        Admin: Mode Monitoring
+                      </span>
+                    )}
+                  </div>
                   <p className="text-xs text-slate-500">
-                    Daftar staf yang memiliki hak akses login ke sistem kasir dan admin koperasi
+                    {isSuperAdmin
+                      ? 'Kelola akun staf kasir, admin monitoring, dan penugasan hak akses sistem koperasi'
+                      : 'Daftar staf kasir yang melayani operasional transaksi di kasir POS koperasi'}
                   </p>
                 </div>
               </div>
-              <button
-                onClick={() => setShowAddUserModal(true)}
-                className="flex items-center space-x-1.5 px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-xs transition-all active:scale-95 cursor-pointer"
-              >
-                <Plus className="w-4 h-4" />
-                <span>+ Tambah Kasir Baru</span>
-              </button>
+              {isSuperAdmin ? (
+                <button
+                  onClick={() => setShowAddUserModal(true)}
+                  className="flex items-center space-x-1.5 px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-xs transition-all active:scale-95 cursor-pointer"
+                >
+                  <Plus className="w-4 h-4" />
+                  <span>+ Tambah Pengguna Baru</span>
+                </button>
+              ) : (
+                <div
+                  className="flex items-center space-x-1.5 px-3 py-1.5 bg-slate-100 border border-slate-200 text-slate-500 text-xs rounded-xl font-medium cursor-not-allowed select-none"
+                  title="Hanya Super Admin yang berwenang menambah akun baru"
+                >
+                  <Lock className="w-3.5 h-3.5 text-slate-400" />
+                  {/* <span>Tambah Akun (Khusus Super Admin)</span> */}
+                </div>
+              )}
             </div>
+
+            {/* Banner Mode Monitoring untuk Admin Biasa */}
+            {!isSuperAdmin && (
+              <div className="p-3.5 bg-amber-50/90 border border-amber-200 rounded-xl text-xs text-amber-900 flex items-start space-x-2.5 shadow-2xs">
+                <ShieldAlert className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+                <div className="space-y-0.5">
+                  <p className="font-bold text-amber-950">Mode Monitoring Admin (Khusus Data Kasir)</p>
+                  <p className="text-amber-800 text-[11px] leading-relaxed">
+                    Anda login sebagai <strong>Admin (Monitoring)</strong>. Pada menu ini, hanya data akun <strong>Staf Kasir</strong> yang ditampilkan. Pembuatan akun baru serta pengelolaan akun staf/admin dibatasi khusus untuk <strong>Super Admin</strong>.
+                  </p>
+                </div>
+              </div>
+            )}
 
             {/* Tabel Daftar Pengguna */}
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs">
                 <thead className="bg-slate-50 text-slate-500 font-bold border-b border-slate-200 uppercase tracking-wider text-[10px]">
                   <tr>
-                    <th className="px-3.5 py-2.5">Nama Staf</th>
+                    <th className="px-3.5 py-2.5">{isSuperAdmin ? 'Nama Staf / Pengguna' : 'Nama Staf Kasir'}</th>
                     <th className="px-3.5 py-2.5">Username</th>
                     <th className="px-3.5 py-2.5">Hak Akses Role</th>
                     <th className="px-3.5 py-2.5">Status</th>
@@ -337,80 +413,111 @@ export const SettingsView = () => {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
-                  {usersList.map((u) => {
-                    const isSelf =
-                      currentAuthUser &&
-                      (u.id === currentAuthUser.id ||
-                        u.username?.toLowerCase() === currentAuthUser.username?.toLowerCase());
-                    return (
-                      <tr key={u.id || u.username} className="hover:bg-slate-50/50">
-                        <td className="px-3.5 py-2.5 font-bold text-slate-900">
-                          <div className="flex items-center space-x-2">
-                            <span>{u.name}</span>
-                            {/* {isSelf && (
-                              <span className="px-1.5 py-0.2 rounded text-[9px] font-extrabold bg-emerald-100 text-emerald-800 border border-emerald-200">
-                                Akun Anda
+                  {displayedUsers.length === 0 ? (
+                    <tr>
+                      <td colSpan={5} className="py-8 text-center text-slate-400 text-xs">
+                        <Users className="w-8 h-8 mx-auto text-slate-300 mb-2" />
+                        <p className="font-semibold text-slate-600">Belum ada akun staf kasir terdaftar</p>
+                        <p className="text-[11px] text-slate-400 mt-0.5">
+                          {isSuperAdmin
+                            ? 'Silakan klik tombol "+ Tambah Pengguna Baru" untuk mendaftarkan akun kasir.'
+                            : 'Hubungi Super Admin jika perlu mendaftarkan akun staf kasir baru.'}
+                        </p>
+                      </td>
+                    </tr>
+                  ) : (
+                    displayedUsers.map((u) => {
+                      const isSelf =
+                        currentAuthUser &&
+                        (u.id === currentAuthUser.id ||
+                          u.username?.toLowerCase() === currentAuthUser.username?.toLowerCase());
+                      const isUserSuperAdmin = u.role === 'super_admin' || u.role === 'superadmin' || u.role === 'super admin';
+                      const isUserAdmin = u.role === 'admin';
+                      return (
+                        <tr key={u.id || u.username} className="hover:bg-slate-50/50">
+                          <td className="px-3.5 py-2.5 font-bold text-slate-900">
+                            <div className="flex items-center space-x-2">
+                              <span>{u.name}</span>
+                              {isSelf && (
+                                <span className="px-1.5 py-0.2 rounded text-[9px] font-extrabold bg-slate-100 text-slate-700 border border-slate-300">
+                                  Akun Anda
+                                </span>
+                              )}
+                            </div>
+                          </td>
+                          <td className="px-3.5 py-2.5 font-mono text-slate-700">@{u.username}</td>
+                          <td className="px-3.5 py-2.5">
+                            {isUserSuperAdmin ? (
+                              <span className="px-2 py-0.5 rounded-md text-[10px] font-extrabold uppercase bg-purple-50 text-purple-800 border border-purple-200 inline-flex items-center gap-1">
+                                <ShieldCheck className="w-2.5 h-2.5 text-purple-600" />
+                                Super Admin
                               </span>
-                            )} */}
-                          </div>
-                        </td>
-                        <td className="px-3.5 py-2.5 font-mono text-slate-700">@{u.username}</td>
-                        <td className="px-3.5 py-2.5">
-                          <span
-                            className={`px-2 py-0.5 rounded-md text-[10px] font-extrabold uppercase ${u.role === 'admin'
-                              ? 'bg-emerald-50 text-emerald-800 border border-emerald-200'
-                              : 'bg-blue-50 text-blue-800 border border-blue-200'
-                              }`}
-                          >
-                            {u.role === 'admin' ? 'Admin Koperasi' : 'Kasir'}
-                          </span>
-                        </td>
-                        <td className="px-3.5 py-2.5">
-                          <span className="inline-flex items-center gap-1 text-[11px] text-emerald-700 font-semibold">
-                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-                            Aktif
-                          </span>
-                        </td>
-                        <td className="px-3.5 py-2.5 text-right">
-                          <div className="flex items-center justify-end space-x-1.5">
-                            {/* Tombol Edit */}
-                            <button
-                              onClick={() => handleOpenEditUser(u)}
-                              className="px-2.5 py-1 text-[11px] font-bold text-slate-700 hover:text-emerald-700 hover:bg-emerald-50 rounded-lg border border-slate-200 transition-colors inline-flex items-center space-x-1 cursor-pointer"
-                              title="Edit Profil & Role Pengguna"
-                            >
-                              <Edit className="w-3 h-3 text-slate-500" />
-                              <span>Edit</span>
-                            </button>
+                            ) : isUserAdmin ? (
+                              <span className="px-2 py-0.5 rounded-md text-[10px] font-extrabold uppercase bg-emerald-50 text-emerald-800 border border-emerald-200 inline-flex items-center gap-1">
+                                <Shield className="w-2.5 h-2.5 text-emerald-600" />
+                                Admin (Monitoring)
+                              </span>
+                            ) : (
+                              <span className="px-2 py-0.5 rounded-md text-[10px] font-extrabold uppercase bg-blue-50 text-blue-800 border border-blue-200 inline-flex items-center gap-1">
+                                <User className="w-2.5 h-2.5 text-blue-600" />
+                                Kasir
+                              </span>
+                            )}
+                          </td>
+                          <td className="px-3.5 py-2.5">
+                            <span className="inline-flex items-center gap-1 text-[11px] text-emerald-700 font-semibold">
+                              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                              Aktif
+                            </span>
+                          </td>
+                          <td className="px-3.5 py-2.5 text-right">
+                            {isSuperAdmin ? (
+                              <div className="flex items-center justify-end space-x-1.5">
+                                {/* Tombol Edit */}
+                                <button
+                                  onClick={() => handleOpenEditUser(u)}
+                                  className="px-2.5 py-1 text-[11px] font-bold text-slate-700 hover:text-emerald-700 hover:bg-emerald-50 rounded-lg border border-slate-200 transition-colors inline-flex items-center space-x-1 cursor-pointer"
+                                  title="Edit Profil & Role Pengguna"
+                                >
+                                  <Edit className="w-3 h-3 text-slate-500" />
+                                  <span>Edit</span>
+                                </button>
 
-                            {/* Tombol Ganti Password */}
-                            <button
-                              onClick={() => setSelectedUserForPassword(u)}
-                              className="px-2.5 py-1 text-[11px] font-bold text-slate-700 hover:text-amber-700 hover:bg-amber-50 rounded-lg border border-slate-200 transition-colors inline-flex items-center space-x-1 cursor-pointer"
-                              title="Ganti Password Akun"
-                            >
-                              <Key className="w-3 h-3 text-slate-500" />
-                              <span>Password</span>
-                            </button>
+                                {/* Tombol Ganti Password */}
+                                <button
+                                  onClick={() => setSelectedUserForPassword(u)}
+                                  className="px-2.5 py-1 text-[11px] font-bold text-slate-700 hover:text-amber-700 hover:bg-amber-50 rounded-lg border border-slate-200 transition-colors inline-flex items-center space-x-1 cursor-pointer"
+                                  title="Ganti Password Akun"
+                                >
+                                  <Key className="w-3 h-3 text-slate-500" />
+                                  <span>Password</span>
+                                </button>
 
-                            {/* Tombol Hapus */}
-                            <button
-                              onClick={() => setUserToDelete(u)}
-                              disabled={isSelf}
-                              className={`px-2.5 py-1 text-[11px] font-bold rounded-lg border transition-colors inline-flex items-center space-x-1 cursor-pointer ${isSelf
-                                ? 'opacity-40 text-slate-400 border-slate-200 cursor-not-allowed'
-                                : 'text-rose-600 hover:text-rose-700 hover:bg-rose-50 border-rose-200'
-                                }`}
-                              title={isSelf ? 'Tidak dapat menghapus akun Anda sendiri' : 'Hapus Akun Pengguna'}
-                            >
-                              <Trash2 className="w-3 h-3 text-rose-500" />
-                              <span>Hapus</span>
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    );
-                  })}
+                                {/* Tombol Hapus */}
+                                <button
+                                  onClick={() => setUserToDelete(u)}
+                                  disabled={isSelf}
+                                  className={`px-2.5 py-1 text-[11px] font-bold rounded-lg border transition-colors inline-flex items-center space-x-1 cursor-pointer ${isSelf
+                                    ? 'opacity-40 text-slate-400 border-slate-200 cursor-not-allowed'
+                                    : 'text-rose-600 hover:text-rose-700 hover:bg-rose-50 border-rose-200'
+                                    }`}
+                                  title={isSelf ? 'Tidak dapat menghapus akun Anda sendiri' : 'Hapus Akun Pengguna'}
+                                >
+                                  <Trash2 className="w-3 h-3 text-rose-500" />
+                                  <span>Hapus</span>
+                                </button>
+                              </div>
+                            ) : (
+                              <div className="flex items-center justify-end space-x-1 text-slate-400 text-[11px]" title="Aksi kelola akun hanya dapat dilakukan oleh Super Admin">
+                                <Lock className="w-3 h-3 text-slate-400" />
+                                <span className="italic">Read-Only</span>
+                              </div>
+                            )}
+                          </td>
+                        </tr>
+                      );
+                    })
+                  )}
                 </tbody>
               </table>
             </div>
@@ -583,14 +690,14 @@ export const SettingsView = () => {
                       {formData.name || 'KOPERASI UNIT SEKOLAH "PERMATA KITA"'}
                     </h1>
                     <p className="text-[10px] text-zinc-700 pt-0.5 leading-tight">
-                      {formData.address || 'Jl. Permata Madani No. 45, Kompleks Islamic Centre'}, {formData.city || 'Bandar Lampung'}
+                      {formData.address || 'Jl SMP 21 Padang'}, {formData.city || 'Kota Padang'}
                     </p>
                     <p className="text-[10px] text-zinc-700 leading-tight">
-                      Telepon / Faks. {formData.phone || '(0721) 789123 / 0812-3456-7890'}
+                      Telepon / Faks. {formData.phone || '-'}
                     </p>
                     <div className="text-[9.5px] text-zinc-700 pt-0.5 flex items-center justify-center space-x-5 leading-tight">
-                      <span>Laman : {formData.website || 'https://www.permatakita.sch.id'}</span>
-                      <span>Surel : {formData.email || 'koperasi@permatakita.sch.id'}</span>
+                      <span>Laman : {formData.website || '-'}</span>
+                      <span>Surel : {formData.email || '-'}</span>
                     </div>
                   </div>
                 </div>
@@ -634,7 +741,7 @@ export const SettingsView = () => {
                     name="headName"
                     value={formData.headName}
                     onChange={handleChange}
-                    placeholder="Ustadzah Fatimah, S.Pd"
+                    placeholder="Nama Kepala Pengelola (Contoh: Nama Pejabat)"
                     className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs sm:text-sm font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600"
                   />
                 </div>
@@ -647,7 +754,7 @@ export const SettingsView = () => {
                     name="headNip"
                     value={formData.headNip}
                     onChange={handleChange}
-                    placeholder="19880920 201402 2 005"
+                    placeholder="NIP Pejabat (atau -)"
                     className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs sm:text-sm font-mono text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600"
                   />
                 </div>
@@ -687,7 +794,7 @@ export const SettingsView = () => {
                     name="treasurerName"
                     value={formData.treasurerName}
                     onChange={handleChange}
-                    placeholder="Ustadz Ahmad Fauzi, S.E"
+                    placeholder="Nama Bendahara (Contoh: Nama Pejabat)"
                     className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs sm:text-sm font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600"
                   />
                 </div>
@@ -700,7 +807,7 @@ export const SettingsView = () => {
                     name="treasurerNip"
                     value={formData.treasurerNip}
                     onChange={handleChange}
-                    placeholder="19850412 201101 1 003"
+                    placeholder="NIP Bendahara (atau -)"
                     className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs sm:text-sm font-mono text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600"
                   />
                 </div>
@@ -740,7 +847,7 @@ export const SettingsView = () => {
                     name="principalName"
                     value={formData.principalName}
                     onChange={handleChange}
-                    placeholder="Ustadz Muhammad Irfan, M.Pd"
+                    placeholder="Nama Kepala Sekolah (Contoh: Nama Pejabat)"
                     className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs sm:text-sm font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600"
                   />
                 </div>
@@ -753,7 +860,7 @@ export const SettingsView = () => {
                     name="principalNip"
                     value={formData.principalNip}
                     onChange={handleChange}
-                    placeholder="19790105 200501 1 003"
+                    placeholder="NIP Kepala Sekolah (atau -)"
                     className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs sm:text-sm font-mono text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600"
                   />
                 </div>
@@ -789,20 +896,20 @@ export const SettingsView = () => {
                     <div className="h-14 flex items-center justify-center text-slate-300 italic text-[11px] font-serif select-none">
                       ( Tanda Tangan Basah )
                     </div>
-                    <p className="font-bold text-slate-900 underline">{formData.treasurerName || '(Nama Bendahara)'}</p>
+                    <p className="font-bold text-slate-900 underline">{formData.treasurerName || 'Tidak Diketahui'}</p>
                     <p className="text-[10px] text-slate-500 font-mono mt-0.5">NIP: {formData.treasurerNip || '-'}</p>
                   </div>
 
                   {/* Kolom Kanan */}
                   <div className="text-center min-w-[180px]">
                     <p className="text-[11px] text-slate-500">
-                      {formData.city || 'Bandar Lampung'}, {formatTanggal(new Date())}
+                      {formData.city || 'Kota Padang'}, {formatTanggal(new Date())}
                     </p>
                     <p className="font-bold text-slate-900">{formData.headTitle || 'Kepala Pengelola Koperasi'}</p>
                     <div className="h-14 flex items-center justify-center text-slate-300 italic text-[11px] font-serif select-none">
                       ( Tanda Tangan Basah )
                     </div>
-                    <p className="font-bold text-slate-900 underline">{formData.headName || '(Nama Kepala)'}</p>
+                    <p className="font-bold text-slate-900 underline">{formData.headName || 'Tidak Diketahui'}</p>
                     <p className="text-[10px] text-slate-500 font-mono mt-0.5">NIP: {formData.headNip || '-'}</p>
                   </div>
                 </div>
@@ -815,7 +922,7 @@ export const SettingsView = () => {
                     <div className="h-14 flex items-center justify-center text-slate-300 italic text-[11px] font-serif select-none">
                       ( Tanda Tangan & Cap Lembaga )
                     </div>
-                    <p className="font-bold text-slate-900 underline">{formData.principalName || '(Nama Kepala Sekolah)'}</p>
+                    <p className="font-bold text-slate-900 underline">{formData.principalName || 'Tidak Diketahui'}</p>
                     <p className="text-[10px] text-slate-500 font-mono mt-0.5">NIP: {formData.principalNip || '-'}</p>
                   </div>
                 </div>
@@ -911,7 +1018,7 @@ export const SettingsView = () => {
                     name="receiptHeaderAddress"
                     value={formData.receiptHeaderAddress}
                     onChange={handleChange}
-                    placeholder="Jl. Permata Madani No. 45, Bandar Lampung"
+                    placeholder="Jl SMP 21 Padang, Kota Padang"
                     className="w-full px-3.5 py-2 bg-white border border-slate-200 rounded-xl text-xs sm:text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600"
                   />
                 </div>
@@ -925,7 +1032,7 @@ export const SettingsView = () => {
                     name="receiptHeaderPhone"
                     value={formData.receiptHeaderPhone}
                     onChange={handleChange}
-                    placeholder="(0721) 789123 / 0812-3456-7890"
+                    placeholder="-"
                     className="w-full px-3.5 py-2 bg-white border border-slate-200 rounded-xl text-xs sm:text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600"
                   />
                 </div>
@@ -994,10 +1101,10 @@ export const SettingsView = () => {
                     {formData.receiptHeaderSubtitle || 'Full Day School • Koperasi'}
                   </p>
                   <p className="text-[9px] text-slate-500">
-                    {formData.receiptHeaderAddress || 'Jl. Permata Madani No. 45, Bandar Lampung'}
+                    {formData.receiptHeaderAddress || 'Jl SMP 21 Padang, Kota Padang'}
                   </p>
                   <p className="text-[9px] text-slate-500">
-                    Telp: {formData.receiptHeaderPhone || '(0721) 789123'}
+                    Telp: {formData.receiptHeaderPhone || '-'}
                   </p>
                 </div>
 
@@ -1160,9 +1267,9 @@ export const SettingsView = () => {
       {showAddUserModal && (
         <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl max-w-md w-full p-5 shadow-2xl border border-slate-200 animate-in fade-in zoom-in-95">
-            <h3 className="text-sm font-bold text-slate-900 mb-1">Tambah Kasir Baru</h3>
+            <h3 className="text-sm font-bold text-slate-900 mb-1">Tambah Pengguna Baru</h3>
             <p className="text-xs text-slate-500 mb-4">
-              Buat akun staf kasir baru untuk melayani transaksi di kasir POS
+              Buat akun pengguna baru dengan hak akses yang sesuai
             </p>
 
             <form onSubmit={handleCreateUser} className="space-y-3">
@@ -1225,8 +1332,9 @@ export const SettingsView = () => {
                   }
                   className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600"
                 >
-                  <option value="kasir">Kasir POS (Hanya Kasir)</option>
-                  <option value="admin">Admin Koperasi (Akses Penuh)</option>
+                  <option value="kasir">Kasir POS (Layanan Transaksi POS & Riwayat Shift)</option>
+                  <option value="admin">Admin (Monitoring Penuh Sistem, Tanpa Kelola Akun)</option>
+                  <option value="super_admin">Super Admin (Full Monitoring Sistem & Kelola Akun)</option>
                 </select>
               </div>
 
@@ -1242,7 +1350,7 @@ export const SettingsView = () => {
                   type="submit"
                   className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-xs transition-colors cursor-pointer"
                 >
-                  Simpan Kasir
+                  Simpan Pengguna
                 </button>
               </div>
             </form>
@@ -1255,10 +1363,10 @@ export const SettingsView = () => {
         <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl max-w-md w-full p-5 shadow-2xl border border-slate-200 animate-in fade-in zoom-in-95">
             <h3 className="text-sm font-bold text-slate-900 mb-1">
-              Edit Akun Staf / Kasir
+              Edit Akun Pengguna
             </h3>
             <p className="text-xs text-slate-500 mb-4">
-              Perbarui identitas staf atau hak akses login akun @{editingUser.username}
+              Perbarui identitas pengguna atau hak akses login akun @{editingUser.username}
             </p>
 
             <form onSubmit={handleSaveEditUser} className="space-y-3">
@@ -1303,8 +1411,9 @@ export const SettingsView = () => {
                   }
                   className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600"
                 >
-                  <option value="kasir">Kasir POS (Hanya Kasir)</option>
-                  <option value="admin">Admin Koperasi (Akses Penuh)</option>
+                  <option value="kasir">Kasir POS (Layanan Transaksi POS & Riwayat Shift)</option>
+                  <option value="admin">Admin (Monitoring Penuh Sistem, Tanpa Kelola Akun)</option>
+                  <option value="super_admin">Super Admin (Full Monitoring Sistem & Kelola Akun)</option>
                 </select>
               </div>
 

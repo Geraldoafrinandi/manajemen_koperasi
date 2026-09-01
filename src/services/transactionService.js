@@ -168,7 +168,7 @@ export const normalizeTransaction = (t) => {
 class TransactionService {
   async getAll(params = {}) {
     const user = params.user || null;
-    const isCashier = params.role === 'cashier' || user?.role === 'cashier';
+    const isCashier = params.role === 'kasir' || params.role === 'cashier' || user?.role === 'kasir' || user?.role === 'cashier';
 
     const query = {
       page: params.page || 1,

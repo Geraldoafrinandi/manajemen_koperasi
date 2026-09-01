@@ -2,11 +2,9 @@ import { useState, useMemo, useEffect } from 'react';
 import { useProducts } from '../../context/ProductContext';
 import { useAuth } from '../../context/AuthContext';
 import { formatRupiah, formatTanggal } from '../../utils/formatters';
-import Badge from '../../components/common/Badge';
 import ReceiptModal from '../../components/pos/ReceiptModal';
 import TransactionDetailModal from '../../components/transactions/TransactionDetailModal';
 import {
-  RotateCcw,
   Clock,
   Printer,
   Search,
@@ -17,6 +15,9 @@ import {
   Calendar,
   X,
   TrendingUp,
+  Banknote,
+  QrCode,
+  CreditCard,
 } from 'lucide-react';
 
 const getLocalDateString = (d = new Date()) => {
@@ -197,14 +198,36 @@ export const ShiftHistoryView = () => {
 
   const isFilterActive = datePreset !== 'today' || searchQuery.trim() !== '' || paymentFilter !== 'all';
 
+  const renderPaymentBadge = (method) => {
+    const m = String(method || '').toLowerCase();
+    if (m.includes('qris')) {
+      return (
+        <span className="inline-flex items-center space-x-1 px-2.5 py-1 rounded-lg bg-sky-50 text-sky-700 border border-sky-200 text-xs font-bold shadow-2xs">
+          <QrCode className="w-3.5 h-3.5 text-sky-600 shrink-0" />
+          <span>QRIS</span>
+        </span>
+      );
+    }
+    if (m.includes('transfer')) {
+      return (
+        <span className="inline-flex items-center space-x-1 px-2.5 py-1 rounded-lg bg-purple-50 text-purple-700 border border-purple-200 text-xs font-bold shadow-2xs">
+          <CreditCard className="w-3.5 h-3.5 text-purple-600 shrink-0" />
+          <span>Transfer</span>
+        </span>
+      );
+    }
+    return (
+      <span className="inline-flex items-center space-x-1 px-2.5 py-1 rounded-lg bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs font-bold shadow-2xs">
+        <Banknote className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+        <span>Tunai</span>
+      </span>
+    );
+  };
+
   return (
     <div className="p-4 sm:p-6 max-w-7xl mx-auto space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
-          {/* <div className="flex items-center space-x-2 text-emerald-700 font-bold text-xs uppercase tracking-wider mb-1">
-            <RotateCcw className="w-4 h-4" />
-            <span>Riwayat & Filter Penjualan Kasir</span>
-          </div> */}
           <h1 className="text-xl sm:text-2xl font-extrabold text-slate-900 tracking-tight">
             Aktivitas Shift & Laporan Penjualan
           </h1>
@@ -248,64 +271,61 @@ export const ShiftHistoryView = () => {
             <div className="flex items-center gap-2 mt-1.5 text-[11px] text-slate-500">
               <span className="text-emerald-700 font-semibold">Tunai: {formatRupiah(shiftStats.cashRevenue)}</span>
               <span>•</span>
-              <span className="text-blue-700 font-semibold">Non-Tunai: {formatRupiah(shiftStats.nonCashRevenue)}</span>
+              <span className="text-sky-700 font-semibold">Non-Tunai: {formatRupiah(shiftStats.nonCashRevenue)}</span>
             </div>
           </div>
-          <div className="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-700 flex items-center justify-center font-extrabold text-sm shadow-2xs shrink-0">
-            Rp
-          </div>
         </div>
 
         <div className="p-5 rounded-2xl bg-white border border-slate-200 shadow-2xs flex items-center justify-between">
           <div>
-            <span className="text-xs font-semibold text-slate-500">Transaksi Berhasil</span>
+            <span className="text-xs font-semibold text-slate-500 flex items-center gap-1">
+              <Receipt className="w-3.5 h-3.5 text-blue-600" />
+              Total Transaksi
+            </span>
             <h3 className="text-xl sm:text-2xl font-extrabold text-slate-900 mt-1 font-mono tracking-tight">
-              {shiftStats.totalTransactions} <span className="text-sm font-normal text-slate-500">Faktur</span>
+              {shiftStats.totalTransactions} <span className="text-sm font-normal text-slate-500">Struk</span>
             </h3>
-            <p className="text-[11px] text-slate-400 mt-1">Dihasilkan oleh akun {user?.name || 'Kasir'}</p>
-          </div>
-          <div className="w-12 h-12 rounded-2xl bg-slate-100 text-slate-700 flex items-center justify-center shrink-0">
-            <Receipt className="w-6 h-6 text-slate-600" />
+            <p className="text-[11px] text-slate-400 mt-1.5">
+              Rata-rata: {formatRupiah(shiftStats.totalTransactions > 0 ? Math.round(shiftStats.totalRevenue / shiftStats.totalTransactions) : 0)} / transaksi
+            </p>
           </div>
         </div>
 
         <div className="p-5 rounded-2xl bg-white border border-slate-200 shadow-2xs flex items-center justify-between">
           <div>
-            <span className="text-xs font-semibold text-slate-500">Total Barang Terjual</span>
-            <h3 className="text-xl sm:text-2xl font-extrabold text-emerald-700 mt-1 font-mono tracking-tight">
-              {shiftStats.totalItems} <span className="text-sm font-normal text-slate-500">Pcs/Unit</span>
+            <span className="text-xs font-semibold text-slate-500 flex items-center gap-1">
+              <Clock className="w-3.5 h-3.5 text-purple-600" />
+              Total Produk Terjual
+            </span>
+            <h3 className="text-xl sm:text-2xl font-extrabold text-slate-900 mt-1 font-mono tracking-tight">
+              {shiftStats.totalItems} <span className="text-sm font-normal text-slate-500">Pcs</span>
             </h3>
-            <p className="text-[11px] text-slate-400 mt-1">Total kuantitas barang fisik keluar</p>
-          </div>
-          <div className="w-12 h-12 rounded-2xl bg-emerald-100/70 text-emerald-800 flex items-center justify-center shrink-0">
-            <Clock className="w-6 h-6" />
+            <p className="text-[11px] text-slate-400 mt-1.5">
+              Kuantitas seluruh barang laku
+            </p>
           </div>
         </div>
       </div>
 
-      <div className="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200 shadow-2xs space-y-3.5">
-        <div className="flex flex-wrap items-center justify-between gap-2.5 pb-3 border-b border-slate-100">
-          <div className="flex items-center space-x-1.5 overflow-x-auto pb-1 sm:pb-0 w-full sm:w-auto">
-            <span className="text-xs font-bold text-slate-500 flex items-center mr-1 shrink-0">
-              <Calendar className="w-3.5 h-3.5 mr-1 text-slate-400" />
-              Pilihan Cepat:
-            </span>
-
+      <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-2xs space-y-3">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2 border-b border-slate-100">
+          <div className="flex items-center space-x-1.5 overflow-x-auto pb-1 sm:pb-0">
             {[
               { id: 'today', label: 'Hari Ini' },
               { id: 'yesterday', label: 'Kemarin' },
               { id: '7days', label: '7 Hari' },
               { id: 'this_month', label: 'Bulan Ini' },
-              { id: 'all', label: `Semua (${myCashierTransactions.length})` },
+              { id: 'all', label: 'Semua' },
             ].map((p) => (
               <button
                 key={p.id}
                 type="button"
                 onClick={() => applyPreset(p.id)}
-                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap shrink-0 ${datePreset === p.id
-                  ? 'bg-emerald-600 text-white shadow-2xs ring-2 ring-emerald-600/20'
-                  : 'bg-slate-100 text-slate-600 hover:bg-slate-200 border border-slate-200/80'
-                  }`}
+                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap shrink-0 ${
+                  datePreset === p.id
+                    ? 'bg-emerald-600 text-white shadow-2xs ring-2 ring-emerald-600/20'
+                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200 border border-slate-200/80'
+                }`}
               >
                 {p.label}
               </button>
@@ -391,7 +411,6 @@ export const ShiftHistoryView = () => {
               {filteredTransactions.length === 0 ? (
                 <tr>
                   <td colSpan="6" className="py-12 text-center text-slate-400 space-y-2">
-                    {/* <Receipt className="w-10 h-10 mx-auto text-slate-300" /> */}
                     <p className="text-xs font-medium text-slate-600">
                       Tidak ada transaksi penjualan untuk kasir <strong className="text-slate-800">{user?.name || 'Kasir'}</strong> pada periode <strong className="text-emerald-700">{activeDateLabel}</strong>.
                     </p>
@@ -430,7 +449,7 @@ export const ShiftHistoryView = () => {
                         {formatTanggal(trx.createdAt, true)}
                       </td>
                       <td className="py-3.5 px-4">
-                        <Badge variant="primary">{trx.paymentMethod}</Badge>
+                        {renderPaymentBadge(trx.paymentMethod)}
                       </td>
                       <td className="py-3.5 px-4 text-center font-mono text-xs text-slate-600">
                         {itemsCount} Pcs

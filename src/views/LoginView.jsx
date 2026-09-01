@@ -32,9 +32,12 @@ export const LoginView = () => {
 
     try {
       const loggedUser = await login(username, password);
-      const isAdminUser = loggedUser?.role?.toLowerCase() === 'admin';
-      const greeting = isAdminUser
-        ? 'Berhasil masuk sebagai Admin.'
+      const isSuper = loggedUser?.role === 'super_admin' || loggedUser?.role === 'superadmin';
+      const isAdminUser = loggedUser?.role === 'admin';
+      const greeting = isSuper
+        ? 'Berhasil masuk sebagai Super Admin (Full Akses).'
+        : isAdminUser
+        ? 'Berhasil masuk sebagai Admin (Mode Monitoring).'
         : `Berhasil masuk sebagai Kasir (${loggedUser?.name || 'Kasir'}).`;
 
       toast.success(greeting);

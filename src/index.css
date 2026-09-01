@@ -6,13 +6,11 @@
   color: #0f172a;
 }
 
-/* Sembunyikan tombol mata / clear bawaan browser Edge & IE */
 input::-ms-reveal,
 input::-ms-clear {
   display: none !important;
 }
 
-/* Custom Scrollbar */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
@@ -31,26 +29,31 @@ input::-ms-clear {
   background: #94a3b8;
 }
 
-/* Print Styles & Browser Header/Footer Suppression */
 @page {
   size: A4 portrait;
-  margin: 12mm 15mm;
+  margin: 15mm;
 }
 
 @media print {
-  html, body {
+  html,
+  body,
+  #root,
+  #root > div,
+  .h-screen,
+  .overflow-hidden {
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    overflow: visible !important;
+    position: static !important;
     margin: 0 !important;
     padding: 0 !important;
     background-color: #ffffff !important;
     color: #000000 !important;
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
-    width: 100% !important;
-    height: auto !important;
-    overflow: visible !important;
   }
 
-  /* Sembunyikan semua elemen UI layar, navigasi, modal backdrop, tombol saat print */
   header,
   nav,
   aside,
@@ -61,18 +64,36 @@ input::-ms-clear {
     display: none !important;
   }
 
-  /* Pastikan area cetak laporan tampil penuh, bersih, dan tajam */
   .report-print-area {
     display: block !important;
     position: static !important;
     width: 100% !important;
+    height: auto !important;
     margin: 0 !important;
     padding: 0 !important;
     background: #ffffff !important;
     color: #000000 !important;
     box-shadow: none !important;
     border: none !important;
-    page-break-inside: auto;
+    overflow: visible !important;
+  }
+
+  .report-print-container {
+    display: block !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+  }
+
+  .report-print-top {
+    display: block !important;
+  }
+
+  .report-print-signatures {
+    display: block !important;
+    margin-top: 2rem !important;
+    padding-top: 1rem !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
   }
 
   .report-print-area,
@@ -83,20 +104,22 @@ input::-ms-clear {
   .report-print-area table {
     width: 100% !important;
     border-collapse: collapse !important;
-    page-break-inside: auto;
-  }
-
-  .report-print-area tr {
-    page-break-inside: avoid;
-    page-break-after: auto;
+    page-break-inside: auto !important;
+    break-inside: auto !important;
   }
 
   .report-print-area thead {
-    display: table-header-group;
+    display: table-header-group !important;
   }
 
   .report-print-area tfoot {
-    display: table-footer-group;
+    display: table-footer-group !important;
+  }
+
+  .report-print-area tr {
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+    page-break-after: auto !important;
   }
 
   .print-only {
@@ -104,9 +127,6 @@ input::-ms-clear {
   }
 }
 
-/* ======================================================
-   Modern Minimalist Scanner Animations & Styles
-   ====================================================== */
 #qr-camera-reader {
   border: none !important;
 }
@@ -139,9 +159,6 @@ input::-ms-clear {
   animation: elegantScan 2.4s ease-in-out infinite alternate;
 }
 
-/* ======================================================
-   Smooth Toast Notifications Animations & Micro-Interactions
-   ====================================================== */
 @keyframes toastSlideIn {
   0% {
     opacity: 0;
@@ -219,8 +236,4 @@ input::-ms-clear {
 
 .animate-icon-pop {
   animation: iconPopIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
-}
-
-.animate-icon-wiggle {
-  animation: iconWiggle 0.6s ease-in-out forwards;
 }
