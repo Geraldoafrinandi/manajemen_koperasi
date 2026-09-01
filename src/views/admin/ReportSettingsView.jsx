@@ -29,7 +29,7 @@ export const ReportSettingsView = () => {
   const [formData, setFormData] = useState({
     name: coopProfile.name || 'KOPERASI PERMATA KITA',
     institution: coopProfile.institution || 'Full Day School • Centre of Islamic Education Service',
-    nopen: coopProfile.nopen || 'KOP-PERMATA-KITA/2026/08',
+    nopen: coopProfile.nopen && coopProfile.nopen !== 'KOP-PERMATA-KITA/2026/08' ? coopProfile.nopen : `KOP-PERMATA-KITA/${new Date().getFullYear()}/${String(new Date().getMonth() + 1).padStart(2, '0')}`,
     address: coopProfile.address || 'Jl SMP 21 Padang',
     city: coopProfile.city || 'Kota Padang',
     postalCode: coopProfile.postalCode || '25164',

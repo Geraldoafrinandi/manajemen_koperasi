@@ -1,11 +1,16 @@
-// Default konfigurasi awal Koperasi SD IT Permata
+const getRealtimeNopen = () => {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  return `KOP-PERMATA-KITA/${year}/${month}`;
+};
 
 export const INITIAL_USERS = [];
 
 export const INITIAL_COOP_PROFILE = {
   name: 'KOPERASI PERMATA KITA',
   institution: 'Full Day School • Centre of Islamic Education Service',
-  nopen: 'KOP-PERMATA-KITA/2026/08',
+  nopen: getRealtimeNopen(),
   address: 'Jl SMP 21 Padang',
   city: 'Kota Padang',
   postalCode: '25164',
@@ -29,3 +34,5 @@ export const INITIAL_COOP_PROFILE = {
   receiptFooter: '*** TERIMA KASIH ***',
   receiptPolicy: '',
 };
+
+export { getRealtimeNopen };

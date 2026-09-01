@@ -1,5 +1,6 @@
 import {
   INITIAL_COOP_PROFILE,
+  getRealtimeNopen,
 } from '../data/initialData';
 
 const KEYS = {
@@ -135,6 +136,7 @@ class StorageService {
       if (profile.website === 'www.permatakita.sch.id') profile.website = '-';
       if (profile.receiptHeaderAddress === 'Jl. Permata Madani No. 45, Bandar Lampung') profile.receiptHeaderAddress = 'Jl SMP 21 Padang, Kota Padang';
       if (profile.receiptHeaderPhone === '(0721) 789123 / 0812-3456-7890') profile.receiptHeaderPhone = '-';
+      if (!profile.nopen || profile.nopen === 'KOP-PERMATA-KITA/2026/09') profile.nopen = getRealtimeNopen();
     }
     return profile;
   }

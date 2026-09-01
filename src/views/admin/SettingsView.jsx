@@ -40,7 +40,7 @@ export const SettingsView = () => {
   const [formData, setFormData] = useState({
     name: coopProfile.name || 'KOPERASI PERMATA KITA',
     institution: coopProfile.institution || 'Full Day School • Centre of Islamic Education Service',
-    nopen: coopProfile.nopen || 'KOP-PERMATA-KITA/2026/08',
+    nopen: coopProfile.nopen && coopProfile.nopen !== 'KOP-PERMATA-KITA/2026/08' ? coopProfile.nopen : `KOP-PERMATA-KITA/${new Date().getFullYear()}/${String(new Date().getMonth() + 1).padStart(2, '0')}`,
     address: coopProfile.address || 'Jl SMP 21 Padang',
     city: coopProfile.city || 'Kota Padang',
     postalCode: coopProfile.postalCode || '25164',
@@ -286,7 +286,7 @@ export const SettingsView = () => {
       badge: displayedUsers.length,
     },
     { id: 'kop_signatures', label: '2. Kop Surat & Tanda Tangan', icon: Building },
-    { id: 'receipt', label: '3. Struk Kasir POS', icon: Printer },
+    { id: 'receipt', label: '3. Struk Kasir ', icon: Printer },
     { id: 'database', label: '4. Sinkronisasi Database', icon: Database },
   ];
 
