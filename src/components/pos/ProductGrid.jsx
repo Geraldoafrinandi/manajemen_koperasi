@@ -59,6 +59,28 @@ export const ProductGrid = ({ onOpenScanner, onAddNewProduct }) => {
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  const q = searchQuery.trim();
+                  if (q) {
+                    const exactMatch = products.find(
+                      (p) =>
+                        p.status !== false &&
+                        ((p.barcode && String(p.barcode).trim().toLowerCase() === q.toLowerCase()) ||
+                          (p.sku && String(p.sku).trim().toLowerCase() === q.toLowerCase()))
+                    );
+                    if (exactMatch) {
+                      e.preventDefault();
+                      addItem(exactMatch, 1);
+                      setSearchQuery('');
+                    } else if (/^\d{6,}$/.test(q)) {
+                      e.preventDefault();
+                      addItemByBarcode(q);
+                      setSearchQuery('');
+                    }
+                  }
+                }
+              }}
               placeholder="Cari nama barang / kategori..."
               className="w-full pl-10 pr-9 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm text-slate-900 placeholder:text-slate-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600 transition-all"
             />

@@ -16,7 +16,8 @@ export const BarcodeHardwareListener = () => {
       const timeDiff = currentTime - lastKeyTimeRef.current;
       lastKeyTimeRef.current = currentTime;
 
-      if (timeDiff > 100 && bufferRef.current.length > 0) {
+      // Jeda antar keystroke scanner fisik biasanya < 50ms, toleransi 150ms untuk kompatibilitas semua merk scanner
+      if (timeDiff > 150 && bufferRef.current.length > 0) {
         bufferRef.current = '';
       }
 

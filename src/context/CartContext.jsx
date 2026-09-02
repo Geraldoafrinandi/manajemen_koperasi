@@ -98,14 +98,15 @@ export const CartProvider = ({ children }) => {
     if (!barcodeQuery) return false;
     const cleanQuery = barcodeQuery.toString().trim();
 
-    // Coba cari dari productList yang aktif terlebih dahulu
-    let product = productList.find(
+    // Coba cari dari productList yang aktif atau cache lokal terlebih dahulu (0ms instant lookup)
+    const localProds = productList && productList.length > 0 ? productList : (storageService.getProducts() || []);
+    let product = localProds.find(
       (p) =>
-        (p.barcode && p.barcode.toLowerCase() === cleanQuery.toLowerCase()) ||
-        (p.sku && p.sku.toLowerCase() === cleanQuery.toLowerCase())
+        (p.barcode && String(p.barcode).trim().toLowerCase() === cleanQuery.toLowerCase()) ||
+        (p.sku && String(p.sku).trim().toLowerCase() === cleanQuery.toLowerCase())
     );
 
-    // Jika tidak ada di memory, coba cari langsung ke API backend /products/barcode/:barcode
+    // Jika tidak ada di memory / local cache, cari langsung ke API backend /products/barcode/:barcode
     if (!product) {
       try {
         product = await productService.getByBarcode(cleanQuery);

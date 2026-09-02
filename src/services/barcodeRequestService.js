@@ -11,7 +11,7 @@ class BarcodeRequestService {
         return list;
       }
     } catch (err) {
-      console.warn('Fallback local barcode requests:', err.message);
+      // Endpoint opsional / fallback lokal jika backend belum mengaktifkan route barcode-requests
     }
     return storageService.getBarcodeRequests() || [];
   }

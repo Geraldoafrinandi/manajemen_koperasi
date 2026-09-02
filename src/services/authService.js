@@ -27,7 +27,7 @@ class AuthService {
 
     const userData = response.user || response.data?.user || response.data || response;
     const token = response.token || response.data?.token || response.accessToken || response.data?.accessToken;
-    
+
     // Simpan token di sessionStorage (khusus tab aktif saat ini)
     if (token) {
       sessionStorage.setItem(SESSION_KEYS.TOKEN, token);
@@ -45,8 +45,8 @@ class AuthService {
 
     const displayName = userData.name || (
       role === 'super_admin' ? 'Super Admin' :
-      role === 'admin' ? 'Admin Koperasi' :
-      'Kasir'
+        role === 'admin' ? 'Admin Koperasi' :
+          'Kasir'
     );
 
     const user = {
