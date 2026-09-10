@@ -82,6 +82,63 @@ export const PriceCheckerView = ({ onNavigate }) => {
   const lastScanTimeRef = useRef(0);
   const lastScannedBarcodeRef = useRef('');
 
+  // Reset State Callback
+  const handleReset = useCallback(() => {
+    setScannedProduct(null);
+    setScanStatus('idle');
+    setUnregisteredBarcode('');
+    setManualInput('');
+    if (countdownTimerRef.current) clearInterval(countdownTimerRef.current);
+  }, []);
+
+  // Lookup Barcode Callback
+  const handleLookup = useCallback(
+    async (query) => {
+      if (!query) return;
+      const clean = query.toString().trim();
+      if (!clean) return;
+
+      setScanStatus('loading');
+      setManualInput('');
+
+      // 1. Search local product list
+      const matched = (products || []).find((p) => {
+        const pBarcode = String(p.barcode || '').trim().toLowerCase();
+        const pSku = String(p.sku || '').trim().toLowerCase();
+        const pName = String(p.name || '').trim().toLowerCase();
+        const q = clean.toLowerCase();
+        return pBarcode === q || pSku === q || pName === q;
+      });
+
+      if (matched) {
+        setScannedProduct(matched);
+        setScanStatus('found');
+        setUnregisteredBarcode('');
+        playBeep(true);
+        return;
+      }
+
+      // 2. Fallback backend lookup
+      try {
+        const backendProduct = await productService.getByBarcode(clean);
+        if (backendProduct && backendProduct.name) {
+          setScannedProduct(backendProduct);
+          setScanStatus('found');
+          setUnregisteredBarcode('');
+          playBeep(true);
+          return;
+        }
+      } catch (err) { }
+
+      // 3. Not Found
+      setScannedProduct(null);
+      setUnregisteredBarcode(clean);
+      setScanStatus('not_found');
+      playBeep(false);
+    },
+    [products]
+  );
+
   useEffect(() => {
     if (refreshProducts) {
       refreshProducts();
@@ -199,63 +256,7 @@ export const PriceCheckerView = ({ onNavigate }) => {
     return () => {
       if (countdownTimerRef.current) clearInterval(countdownTimerRef.current);
     };
-  }, [scanStatus]);
-
-  // Lookup Barcode
-  const handleLookup = useCallback(
-    async (query) => {
-      if (!query) return;
-      const clean = query.toString().trim();
-      if (!clean) return;
-
-      setScanStatus('loading');
-      setManualInput('');
-
-      // 1. Search local product list
-      const matched = (products || []).find((p) => {
-        const pBarcode = String(p.barcode || '').trim().toLowerCase();
-        const pSku = String(p.sku || '').trim().toLowerCase();
-        const pName = String(p.name || '').trim().toLowerCase();
-        const q = clean.toLowerCase();
-        return pBarcode === q || pSku === q || pName === q;
-      });
-
-      if (matched) {
-        setScannedProduct(matched);
-        setScanStatus('found');
-        setUnregisteredBarcode('');
-        playBeep(true);
-        return;
-      }
-
-      // 2. Fallback backend lookup
-      try {
-        const backendProduct = await productService.getByBarcode(clean);
-        if (backendProduct && backendProduct.name) {
-          setScannedProduct(backendProduct);
-          setScanStatus('found');
-          setUnregisteredBarcode('');
-          playBeep(true);
-          return;
-        }
-      } catch (err) { }
-
-      // 3. Not Found
-      setScannedProduct(null);
-      setUnregisteredBarcode(clean);
-      setScanStatus('not_found');
-      playBeep(false);
-    },
-    [products]
-  );
-
-  const handleReset = () => {
-    setScannedProduct(null);
-    setScanStatus('idle');
-    setUnregisteredBarcode('');
-    setManualInput('');
-    if (countdownTimerRef.current) clearInterval(countdownTimerRef.current);
-  };
+  }, [scanStatus, handleReset]);
 
   return (
     <div
