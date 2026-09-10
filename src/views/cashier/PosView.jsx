@@ -67,7 +67,8 @@ export const PosView = ({ onNavigate }) => {
       const isInputFocused =
         activeTag === 'input' || activeTag === 'textarea' || activeTag === 'select';
 
-      if ((e.key === 'Enter' || e.key === 'F2') && !isInputFocused && items.length > 0) {
+      // Shortcut Kasir: Gunakan F2 atau (Ctrl+Enter) untuk pembayaran agar tidak bentrok dengan Enter bawaan barcode scanner
+      if ((e.key === 'F2' || (e.ctrlKey && e.key === 'Enter')) && !isInputFocused && items.length > 0) {
         e.preventDefault();
         setIsPaymentModalOpen(true);
       }

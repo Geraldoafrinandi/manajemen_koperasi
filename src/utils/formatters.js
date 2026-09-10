@@ -1,7 +1,7 @@
 // Utilitas Formatting untuk Koperasi SD IT Permata
 
 /**
- * Format angka ke format Rupiah Indonesia (Contoh: Rp 15.000)
+ * Format angka ke format Rupiah Indonesia 
  * @param {number} amount 
  * @param {boolean} withSymbol 
  * @returns {string}
@@ -15,7 +15,7 @@ export const formatRupiah = (amount, withSymbol = true) => {
 };
 
 /**
- * Format string/angka dengan titik pemisah ribuan (Contoh: 20000 -> 20.000)
+ * Format string/angka dengan titik pemisah ribuan 
  * @param {string|number} value 
  * @returns {string}
  */
@@ -27,7 +27,7 @@ export const formatThousand = (value) => {
 };
 
 /**
- * Mengubah string berformat ribuan ke angka murni (Contoh: "20.000" -> 20000)
+ * Mengubah string berformat ribuan ke angka murni 
  * @param {string|number} value 
  * @returns {number}
  */
@@ -38,7 +38,7 @@ export const parseThousand = (value) => {
 };
 
 /**
- * Format tanggal ke format standar Indonesia (Contoh: 25 Agustus 2026, 14:30)
+ * Format tanggal ke format standar Indonesia 
  * @param {string|Date} dateString 
  * @param {boolean} withTime 
  * @returns {string}

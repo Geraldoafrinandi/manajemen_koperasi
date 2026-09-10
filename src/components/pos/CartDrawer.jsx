@@ -136,8 +136,12 @@ export const CartDrawer = ({ onProceedToPayment }) => {
               ? 'bg-slate-100 text-slate-400 cursor-not-allowed border border-slate-200'
               : 'bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white shadow-sm'
           }`}
+          title="Buka Modal Pembayaran (F2)"
         >
           <span>Bayar Sekarang ({totalItems})</span>
+          <span className="text-[10px] bg-emerald-800/40 text-emerald-100 px-1.5 py-0.5 rounded font-mono font-bold">
+            F2
+          </span>
           <ArrowRight className="w-4 h-4" />
         </button>
       </div>

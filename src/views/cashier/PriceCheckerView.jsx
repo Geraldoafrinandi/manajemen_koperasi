@@ -79,6 +79,8 @@ export const PriceCheckerView = ({ onNavigate }) => {
   // Scanner Hardware Keystroke Interceptor
   const bufferRef = useRef('');
   const lastKeyTimeRef = useRef(Date.now());
+  const lastScanTimeRef = useRef(0);
+  const lastScannedBarcodeRef = useRef('');
 
   useEffect(() => {
     if (refreshProducts) {
@@ -134,7 +136,7 @@ export const PriceCheckerView = ({ onNavigate }) => {
       const timeDiff = now - lastKeyTimeRef.current;
       lastKeyTimeRef.current = now;
 
-      if (timeDiff > 120 && bufferRef.current.length > 0) {
+      if (timeDiff > 150 && bufferRef.current.length > 0) {
         bufferRef.current = '';
       }
 
@@ -143,6 +145,22 @@ export const PriceCheckerView = ({ onNavigate }) => {
           const barcode = bufferRef.current.trim();
           bufferRef.current = '';
           e.preventDefault();
+          e.stopPropagation();
+          if (typeof e.stopImmediatePropagation === 'function') {
+            e.stopImmediatePropagation();
+          }
+
+          // Proteksi debounce scan ganda < 750ms
+          if (barcode === lastScannedBarcodeRef.current && now - lastScanTimeRef.current < 750) {
+            return;
+          }
+          if (now - lastScanTimeRef.current < 250) {
+            return;
+          }
+
+          lastScanTimeRef.current = now;
+          lastScannedBarcodeRef.current = barcode;
+
           handleLookup(barcode);
         } else {
           bufferRef.current = '';
@@ -154,9 +172,9 @@ export const PriceCheckerView = ({ onNavigate }) => {
       }
     };
 
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [products]);
+    window.addEventListener('keydown', handleKeyDown, true);
+    return () => window.removeEventListener('keydown', handleKeyDown, true);
+  }, [products, handleLookup]);
 
   // Auto Reset Countdown Timer
   useEffect(() => {
