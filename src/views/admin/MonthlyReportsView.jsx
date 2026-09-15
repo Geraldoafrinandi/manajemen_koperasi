@@ -7,7 +7,12 @@ import {
   flattenTransactionsToItems,
   aggregateMonthlyDailySales,
 } from '../../utils/exportPdf';
-import { formatRupiah, formatTanggal, formatTanggalShort } from '../../utils/formatters';
+import {
+  formatRupiah,
+  formatTanggal,
+  formatTanggalShort,
+  getLocalYYYYMMDD,
+} from '../../utils/formatters';
 import PermataLogo from '../../components/common/PermataLogo';
 import PdfPreviewModal from '../../components/common/PdfPreviewModal';
 import Pagination from '../../components/common/Pagination';
@@ -71,7 +76,7 @@ export const MonthlyReportsView = () => {
 
   const currentYear = new Date().getFullYear();
   const currentMonth = new Date().getMonth();
-  const todayStr = new Date().toISOString().slice(0, 10);
+  const todayStr = getLocalYYYYMMDD();
 
   const availableYears = useMemo(() => {
     const nowYear = new Date().getFullYear();
@@ -88,7 +93,7 @@ export const MonthlyReportsView = () => {
   const [selectedYear, setSelectedYear] = useState(currentYear);
   const [selectedMonth, setSelectedMonth] = useState(currentMonth);
   const [startDate, setStartDate] = useState(
-    new Date(currentYear, currentMonth, 1).toISOString().slice(0, 10)
+    getLocalYYYYMMDD(new Date(currentYear, currentMonth, 1))
   );
   const [endDate, setEndDate] = useState(todayStr);
   const [isPreviewModalOpen, setIsPreviewModalOpen] = useState(false);
@@ -213,7 +218,7 @@ export const MonthlyReportsView = () => {
   const setYesterday = () => {
     const d = new Date();
     d.setDate(d.getDate() - 1);
-    setSelectedDate(d.toISOString().slice(0, 10));
+    setSelectedDate(getLocalYYYYMMDD(d));
   };
 
   const setToday = () => {

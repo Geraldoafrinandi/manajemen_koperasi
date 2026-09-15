@@ -1,6 +1,6 @@
 import api from './api';
 import { normalizeTransaction } from './transactionService';
-import { getLocalYYYYMMDD } from '../utils/formatters';
+import { getLocalYYYYMMDD, getLocalYYYYMM } from '../utils/formatters';
 
 class ReportService {
   // Laporan Penjualan (Admin)
@@ -47,8 +47,8 @@ class ReportService {
     let end = endDate;
 
     if (year !== undefined && month !== undefined) {
-      start = new Date(year, month, 1).toISOString().slice(0, 10);
-      end = new Date(year, month + 1, 0).toISOString().slice(0, 10);
+      start = getLocalYYYYMMDD(new Date(year, month, 1));
+      end = getLocalYYYYMMDD(new Date(year, month + 1, 0));
     }
 
     try {
@@ -147,9 +147,9 @@ class ReportService {
     }
   }
   // Dashboard Metrics Calculation
-  getDashboardMetrics(products = [], transactions = []) {
-    const todayStr = new Date().toISOString().slice(0, 10);
-    const thisMonthStr = new Date().toISOString().slice(0, 7);
+  getDashboardMetrics(products = [], transactions = [], referenceDate = new Date()) {
+    const todayStr = getLocalYYYYMMDD(referenceDate);
+    const thisMonthStr = getLocalYYYYMM(referenceDate);
 
     // Today Transactions
     const todayTrx = (transactions || []).filter((t) => t.createdAt && getLocalYYYYMMDD(t.createdAt) === todayStr);
@@ -167,13 +167,13 @@ class ReportService {
     const lowStockList = (products || []).filter((p) => p.stock <= p.minStock && p.stock > 0);
     const outOfStockList = (products || []).filter((p) => p.stock <= 0);
 
-    // Last 7 Days
+    // Last 7 Days (calculated with local date)
     const dayNames = ['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'];
     const last7Days = [];
     for (let i = 6; i >= 0; i--) {
-      const d = new Date();
+      const d = new Date(referenceDate);
       d.setDate(d.getDate() - i);
-      const dateStr = d.toISOString().slice(0, 10);
+      const dateStr = getLocalYYYYMMDD(d);
       const dayTrx = (transactions || []).filter((t) => t.createdAt && getLocalYYYYMMDD(t.createdAt) === dateStr);
       const dayRevenue = dayTrx.reduce((sum, t) => sum + (t.grandTotal || 0), 0);
       const dayCost = dayTrx.reduce((sum, t) => sum + (t.totalCost || 0), 0);

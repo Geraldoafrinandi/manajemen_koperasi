@@ -58,14 +58,23 @@ export const formatTanggal = (dateString, withTime = false) => {
   return new Intl.DateTimeFormat('id-ID', options).format(date);
 };
 
-export const getLocalYYYYMMDD = (dateString) => {
-  if (!dateString) return '';
-  const d = new Date(dateString);
+export const getLocalYYYYMMDD = (dateInput = new Date()) => {
+  if (!dateInput) return '';
+  const d = dateInput instanceof Date ? dateInput : new Date(dateInput);
   if (isNaN(d.getTime())) return '';
   const year = d.getFullYear();
   const month = String(d.getMonth() + 1).padStart(2, '0');
   const day = String(d.getDate()).padStart(2, '0');
   return `${year}-${month}-${day}`;
+};
+
+export const getLocalYYYYMM = (dateInput = new Date()) => {
+  if (!dateInput) return '';
+  const d = dateInput instanceof Date ? dateInput : new Date(dateInput);
+  if (isNaN(d.getTime())) return '';
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  return `${year}-${month}`;
 };
 
 export const formatTanggalShort = (dateString, withTime = false) => {
@@ -111,7 +120,7 @@ export const formatWaktu = (dateString) => {
  */
 export const generateInvoiceNumber = () => {
   const now = new Date();
-  const dateStr = now.toISOString().slice(0, 10).replace(/-/g, '');
+  const dateStr = getLocalYYYYMMDD(now).replace(/-/g, '');
   const randomSuffix = Math.floor(1000 + Math.random() * 9000);
   return `TRX-${dateStr}-${randomSuffix}`;
 };

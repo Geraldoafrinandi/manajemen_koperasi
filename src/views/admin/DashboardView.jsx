@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useProducts } from '../../context/ProductContext';
 import reportService from '../../services/reportService';
-import { formatRupiah, formatTanggal } from '../../utils/formatters';
+import { formatRupiah, formatTanggal, getLocalYYYYMMDD } from '../../utils/formatters';
 import {
   TrendingUp,
   AlertTriangle,
@@ -31,9 +31,10 @@ export const DashboardView = ({ onNavigate }) => {
     return () => clearInterval(timer);
   }, []);
 
+  const todayKey = getLocalYYYYMMDD(currentTime);
   const metrics = useMemo(() => {
-    return reportService.getDashboardMetrics(products, transactions);
-  }, [products, transactions]);
+    return reportService.getDashboardMetrics(products, transactions, currentTime);
+  }, [products, transactions, todayKey]);
 
   // Statistik Kategori untuk Diagram Lingkaran (Pie / Donut Chart)
   const categoryStats = useMemo(() => {
