@@ -10,6 +10,8 @@ import {
 import { formatRupiah, formatTanggal, formatTanggalShort } from '../../utils/formatters';
 import PermataLogo from '../../components/common/PermataLogo';
 import PdfPreviewModal from '../../components/common/PdfPreviewModal';
+import Pagination from '../../components/common/Pagination';
+import { usePagination } from '../../utils/usePagination';
 import {
   FileText,
   Printer,
@@ -146,6 +148,18 @@ export const MonthlyReportsView = () => {
     () => aggregateMonthlyDailySales(reportData.transactions || []),
     [reportData.transactions]
   );
+
+  const itemRowsPagination = usePagination({
+    items: itemRows,
+    initialPageSize: 15,
+    resetDeps: [filterMode, selectedDate, selectedYear, selectedMonth, startDate, endDate],
+  });
+
+  const dailyRecapPagination = usePagination({
+    items: dailyRecapRows,
+    initialPageSize: 15,
+    resetDeps: [filterMode, selectedDate, selectedYear, selectedMonth, startDate, endDate],
+  });
 
   const totalDailyTransactions = useMemo(
     () => dailyRecapRows.reduce((sum, r) => sum + r.transactionCount, 0),
@@ -510,124 +524,63 @@ export const MonthlyReportsView = () => {
 
         <div className="overflow-x-auto">
           {isDaily ? (
-            <table className="w-full text-left text-xs sm:text-sm">
-              <thead className="bg-slate-50 text-slate-600 uppercase tracking-wider text-[11px] font-bold border-y border-slate-200">
-                <tr>
-                  <th className="py-3 px-3 w-12 text-center">NO</th>
-                  <th className="py-3 px-3">No. Faktur</th>
-                  <th className="py-3 px-3">Waktu</th>
-                  <th className="py-3 px-3 min-w-[220px]">Rincian Barang</th>
-                  <th className="py-3 px-3 text-center">QTY</th>
-                  <th className="py-3 px-3 text-center">Metode</th>
-                  <th className="py-3 px-3">Kasir</th>
-                  <th className="py-3 px-3 text-right">Subtotal</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100">
-                {itemRows.length === 0 ? (
-                  <tr>
-                    <td colSpan="8" className="text-center py-10 text-slate-400">
-                      Tidak ada barang terjual pada periode {periodLabel}.
-                    </td>
-                  </tr>
-                ) : (
-                  itemRows.map((r, idx) => (
-                    <tr key={idx} className="hover:bg-slate-50/60">
-                      <td className="py-3 px-3 text-center text-slate-400 font-medium">
-                        {idx + 1}
-                      </td>
-                      <td className="py-3 px-3 font-mono font-semibold text-slate-900 whitespace-nowrap">
-                        {r.invoiceNumber}
-                      </td>
-                      <td className="py-3 px-3 text-slate-500 whitespace-nowrap">
-                        {formatTanggal(r.createdAt, true)}
-                      </td>
-                      <td className="py-3 px-3 font-bold text-slate-900">
-                        {r.productName}
-                      </td>
-                      <td className="py-3 px-3 text-center font-mono font-semibold text-slate-700 whitespace-nowrap">
-                        {r.quantity} {r.unit || 'pcs'}
-                      </td>
-                      <td className="py-3 px-3 text-center whitespace-nowrap font-bold text-slate-800">
-                        {r.paymentMethod || 'CASH'}
-                      </td>
-                      <td className="py-3 px-3 text-slate-600 truncate max-w-[120px]">
-                        {r.cashierName || 'Kasir'}
-                      </td>
-                      <td className="py-3 px-3 text-right font-mono font-bold text-slate-900 whitespace-nowrap">
-                        {formatRupiah(r.subtotal)}
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-              {itemRows.length > 0 && (
-                <tfoot className="bg-slate-50 font-bold border-t-2 border-slate-200 text-slate-900 text-xs sm:text-sm">
-                  <tr>
-                    <td colSpan="7" className="py-3 px-3 text-right font-extrabold">
-                      TOTAL:
-                    </td>
-                    <td className="py-3 px-3 text-right font-extrabold font-mono text-emerald-700 text-base">
-                      {formatRupiah(totalOmset)}
-                    </td>
-                  </tr>
-                </tfoot>
-              )}
-            </table>
-          ) : (
-            <div className="space-y-6">
+            <div>
               <table className="w-full text-left text-xs sm:text-sm">
                 <thead className="bg-slate-50 text-slate-600 uppercase tracking-wider text-[11px] font-bold border-y border-slate-200">
                   <tr>
                     <th className="py-3 px-3 w-12 text-center">NO</th>
-                    <th className="py-3 px-3">Tanggal Penjualan</th>
-                    <th className="py-3 px-3 text-center">Jml Transaksi</th>
-                    <th className="py-3 px-3 text-center">Total Barang</th>
+                    <th className="py-3 px-3">No. Faktur</th>
+                    <th className="py-3 px-3">Waktu</th>
+                    <th className="py-3 px-3 min-w-[220px]">Rincian Barang</th>
+                    <th className="py-3 px-3 text-center">QTY</th>
                     <th className="py-3 px-3 text-center">Metode</th>
-                    <th className="py-3 px-3">Petugas Kasir</th>
-                    <th className="py-3 px-3 text-right">Total Omset</th>
+                    <th className="py-3 px-3">Kasir</th>
+                    <th className="py-3 px-3 text-right">Subtotal</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
-                  {dailyRecapRows.length === 0 ? (
+                  {itemRows.length === 0 ? (
                     <tr>
-                      <td colSpan="7" className="text-center py-10 text-slate-400">
-                        Tidak ada transaksi penjualan pada bulan {periodLabel}.
+                      <td colSpan="8" className="text-center py-10 text-slate-400">
+                        Tidak ada barang terjual pada periode {periodLabel}.
                       </td>
                     </tr>
                   ) : (
-                    dailyRecapRows.map((r, idx) => (
+                    itemRowsPagination.paginatedItems.map((r, idx) => (
                       <tr key={idx} className="hover:bg-slate-50/60">
                         <td className="py-3 px-3 text-center text-slate-400 font-medium">
-                          {idx + 1}
+                          {(itemRowsPagination.currentPage - 1) * itemRowsPagination.pageSize + idx + 1}
                         </td>
-                        <td className="py-3 px-3 font-bold text-slate-900 whitespace-nowrap">
-                          {formatTanggal(r.date)}
+                        <td className="py-3 px-3 font-mono font-semibold text-slate-900 whitespace-nowrap">
+                          {r.invoiceNumber}
                         </td>
-                        <td className="py-3 px-3 text-center whitespace-nowrap text-slate-700">
-                          {r.transactionCount} Transaksi
+                        <td className="py-3 px-3 text-slate-500 whitespace-nowrap">
+                          {formatTanggal(r.createdAt, true)}
                         </td>
-                        <td className="py-3 px-3 text-center font-mono text-slate-700 whitespace-nowrap">
-                          {r.totalQty} pcs
+                        <td className="py-3 px-3 font-bold text-slate-900">
+                          {r.productName}
+                        </td>
+                        <td className="py-3 px-3 text-center font-mono font-semibold text-slate-700 whitespace-nowrap">
+                          {r.quantity} {r.unit || 'pcs'}
                         </td>
                         <td className="py-3 px-3 text-center whitespace-nowrap font-bold text-slate-800">
-                          {r.topPaymentMethod}
+                          {r.paymentMethod || 'CASH'}
                         </td>
-                        <td className="py-3 px-3 text-slate-600 truncate max-w-[160px]">
-                          {r.cashiers}
+                        <td className="py-3 px-3 text-slate-600 truncate max-w-[120px]">
+                          {r.cashierName || 'Kasir'}
                         </td>
                         <td className="py-3 px-3 text-right font-mono font-bold text-slate-900 whitespace-nowrap">
-                          {formatRupiah(r.totalRevenue)}
+                          {formatRupiah(r.subtotal)}
                         </td>
                       </tr>
                     ))
                   )}
                 </tbody>
-                {dailyRecapRows.length > 0 && (
+                {itemRows.length > 0 && (
                   <tfoot className="bg-slate-50 font-bold border-t-2 border-slate-200 text-slate-900 text-xs sm:text-sm">
                     <tr>
-                      <td colSpan="6" className="py-3 px-3 text-right font-extrabold">
-                        TOTAL:
+                      <td colSpan="7" className="py-3 px-3 text-right font-extrabold">
+                        TOTAL KESELURUHAN:
                       </td>
                       <td className="py-3 px-3 text-right font-extrabold font-mono text-emerald-700 text-base">
                         {formatRupiah(totalOmset)}
@@ -636,6 +589,89 @@ export const MonthlyReportsView = () => {
                   </tfoot>
                 )}
               </table>
+              <Pagination
+                currentPage={itemRowsPagination.currentPage}
+                totalItems={itemRowsPagination.totalItems}
+                pageSize={itemRowsPagination.pageSize}
+                onPageChange={itemRowsPagination.setCurrentPage}
+                onPageSizeChange={itemRowsPagination.setPageSize}
+                itemLabel="rincian barang"
+                pageSizeOptions={[15, 25, 50, 100]}
+              />
+            </div>
+          ) : (
+            <div className="space-y-6">
+              <div>
+                <table className="w-full text-left text-xs sm:text-sm">
+                  <thead className="bg-slate-50 text-slate-600 uppercase tracking-wider text-[11px] font-bold border-y border-slate-200">
+                    <tr>
+                      <th className="py-3 px-3 w-12 text-center">NO</th>
+                      <th className="py-3 px-3">Tanggal Penjualan</th>
+                      <th className="py-3 px-3 text-center">Jml Transaksi</th>
+                      <th className="py-3 px-3 text-center">Total Barang</th>
+                      <th className="py-3 px-3 text-center">Metode</th>
+                      <th className="py-3 px-3">Petugas Kasir</th>
+                      <th className="py-3 px-3 text-right">Total Omset</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100">
+                    {dailyRecapRows.length === 0 ? (
+                      <tr>
+                        <td colSpan="7" className="text-center py-10 text-slate-400">
+                          Tidak ada transaksi penjualan pada bulan {periodLabel}.
+                        </td>
+                      </tr>
+                    ) : (
+                      dailyRecapPagination.paginatedItems.map((r, idx) => (
+                        <tr key={idx} className="hover:bg-slate-50/60">
+                          <td className="py-3 px-3 text-center text-slate-400 font-medium">
+                            {(dailyRecapPagination.currentPage - 1) * dailyRecapPagination.pageSize + idx + 1}
+                          </td>
+                          <td className="py-3 px-3 font-bold text-slate-900 whitespace-nowrap">
+                            {formatTanggal(r.date)}
+                          </td>
+                          <td className="py-3 px-3 text-center whitespace-nowrap text-slate-700">
+                            {r.transactionCount} Transaksi
+                          </td>
+                          <td className="py-3 px-3 text-center font-mono text-slate-700 whitespace-nowrap">
+                            {r.totalQty} pcs
+                          </td>
+                          <td className="py-3 px-3 text-center whitespace-nowrap font-bold text-slate-800">
+                            {r.topPaymentMethod}
+                          </td>
+                          <td className="py-3 px-3 text-slate-600 truncate max-w-[160px]">
+                            {r.cashiers}
+                          </td>
+                          <td className="py-3 px-3 text-right font-mono font-bold text-slate-900 whitespace-nowrap">
+                            {formatRupiah(r.totalRevenue)}
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                  {dailyRecapRows.length > 0 && (
+                    <tfoot className="bg-slate-50 font-bold border-t-2 border-slate-200 text-slate-900 text-xs sm:text-sm">
+                      <tr>
+                        <td colSpan="6" className="py-3 px-3 text-right font-extrabold">
+                          TOTAL KESELURUHAN:
+                        </td>
+                        <td className="py-3 px-3 text-right font-extrabold font-mono text-emerald-700 text-base">
+                          {formatRupiah(totalOmset)}
+                        </td>
+                      </tr>
+                    </tfoot>
+                  )}
+                </table>
+                <Pagination
+                  currentPage={dailyRecapPagination.currentPage}
+                  totalItems={dailyRecapPagination.totalItems}
+                  pageSize={dailyRecapPagination.pageSize}
+                  onPageChange={dailyRecapPagination.setCurrentPage}
+                  onPageSizeChange={dailyRecapPagination.setPageSize}
+                  itemLabel="hari transaksi"
+                  pageSizeOptions={[15, 25, 31, 50]}
+                />
+              </div>
 
               <div className="border border-slate-200 rounded-xl overflow-hidden">
                 <div className="bg-slate-50 px-4 py-2.5 border-b border-slate-200 font-bold text-xs text-slate-800 uppercase tracking-wider">

@@ -6,6 +6,8 @@ import authService from '../../services/authService';
 import storageService from '../../services/storageService';
 import { formatTanggal } from '../../utils/formatters';
 import PermataLogo from '../../components/common/PermataLogo';
+import Pagination from '../../components/common/Pagination';
+import { usePagination } from '../../utils/usePagination';
 import {
   Settings,
   Building,
@@ -278,6 +280,12 @@ export const SettingsView = () => {
       return r === 'kasir' || r === 'cashier';
     });
 
+  const usersPagination = usePagination({
+    items: displayedUsers,
+    initialPageSize: 10,
+    resetDeps: [isSuperAdmin, usersList],
+  });
+
   const tabs = [
     {
       id: 'users',
@@ -426,7 +434,7 @@ export const SettingsView = () => {
                       </td>
                     </tr>
                   ) : (
-                    displayedUsers.map((u) => {
+                    usersPagination.paginatedItems.map((u) => {
                       const isSelf =
                         currentAuthUser &&
                         (u.id === currentAuthUser.id ||
@@ -520,6 +528,15 @@ export const SettingsView = () => {
                   )}
                 </tbody>
               </table>
+              <Pagination
+                currentPage={usersPagination.currentPage}
+                totalItems={usersPagination.totalItems}
+                pageSize={usersPagination.pageSize}
+                onPageChange={usersPagination.setCurrentPage}
+                onPageSizeChange={usersPagination.setPageSize}
+                itemLabel="pengguna / kasir"
+                pageSizeOptions={[10, 20, 50]}
+              />
             </div>
           </div>
         </div>

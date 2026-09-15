@@ -3,6 +3,8 @@ import { useProducts } from '../../context/ProductContext';
 import { useToast } from '../../context/ToastContext';
 import { formatRupiah } from '../../utils/formatters';
 import Badge from '../../components/common/Badge';
+import Pagination from '../../components/common/Pagination';
+import { usePagination } from '../../utils/usePagination';
 import ProductFormModal from '../../components/products/ProductFormModal';
 import CategoryManagementModal from '../../components/products/CategoryManagementModal';
 import BarcodeLabelPrinterModal from '../../components/products/BarcodeLabelPrinterModal';
@@ -64,6 +66,19 @@ export const ProductsView = () => {
       return matchCategory && matchQuery && matchStatus;
     });
   }, [products, selectedCategory, searchQuery, statusFilter]);
+
+  const {
+    currentPage,
+    setCurrentPage,
+    pageSize,
+    setPageSize,
+    paginatedItems: paginatedProducts,
+    totalItems,
+  } = usePagination({
+    items: filteredProducts,
+    initialPageSize: 10,
+    resetDeps: [searchQuery, selectedCategory, statusFilter],
+  });
 
   const handleOpenAddModal = () => {
     setSelectedProductForEdit(null);
@@ -250,7 +265,7 @@ export const ProductsView = () => {
                   </td>
                 </tr>
               ) : (
-                filteredProducts.map((product) => {
+                paginatedProducts.map((product) => {
                   const isOutOfStock = product.stock === 0;
                   const isLowStock = product.stock > 0 && product.stock <= (product.minStock || 5);
                   const isInactive = product.status === false;
@@ -393,6 +408,16 @@ export const ProductsView = () => {
             </tbody>
           </table>
         </div>
+
+        <Pagination
+          currentPage={currentPage}
+          totalItems={totalItems}
+          pageSize={pageSize}
+          onPageChange={setCurrentPage}
+          onPageSizeChange={setPageSize}
+          itemLabel="barang"
+          pageSizeOptions={[10, 25, 50, 100]}
+        />
       </div>
 
       <ProductFormModal

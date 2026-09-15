@@ -3,6 +3,8 @@ import { useProducts } from '../../context/ProductContext';
 import { formatRupiah, formatTanggal, getLocalYYYYMMDD } from '../../utils/formatters';
 import ReceiptModal from '../../components/pos/ReceiptModal';
 import TransactionDetailModal from '../../components/transactions/TransactionDetailModal';
+import Pagination from '../../components/common/Pagination';
+import { usePagination } from '../../utils/usePagination';
 import {
   Receipt,
   Search,
@@ -47,6 +49,19 @@ export const TransactionsView = () => {
       return matchQuery && matchDate;
     });
   }, [transactions, searchQuery, dateFilter]);
+
+  const {
+    currentPage,
+    setCurrentPage,
+    pageSize,
+    setPageSize,
+    paginatedItems: paginatedTransactions,
+    totalItems,
+  } = usePagination({
+    items: filteredTransactions,
+    initialPageSize: 15,
+    resetDeps: [searchQuery, dateFilter],
+  });
 
   const totalVolume = useMemo(() => {
     return filteredTransactions.reduce((sum, t) => sum + (t.grandTotal || 0), 0);
@@ -187,7 +202,7 @@ export const TransactionsView = () => {
                   </td>
                 </tr>
               ) : (
-                filteredTransactions.map((trx) => {
+                paginatedTransactions.map((trx) => {
                   const totalQty = (trx.items || []).reduce(
                     (acc, i) => acc + (Number(i.quantity || i.qty) || 1),
                     0
@@ -275,6 +290,16 @@ export const TransactionsView = () => {
             </tbody>
           </table>
         </div>
+
+        <Pagination
+          currentPage={currentPage}
+          totalItems={totalItems}
+          pageSize={pageSize}
+          onPageChange={setCurrentPage}
+          onPageSizeChange={setPageSize}
+          itemLabel="transaksi"
+          pageSizeOptions={[10, 15, 25, 50, 100]}
+        />
       </div>
 
       <TransactionDetailModal

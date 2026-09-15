@@ -5,6 +5,8 @@ import { useToast } from '../../context/ToastContext';
 import { formatRupiah, formatTanggal, formatThousand, parseThousand } from '../../utils/formatters';
 import Badge from '../../components/common/Badge';
 import Modal from '../../components/common/Modal';
+import Pagination from '../../components/common/Pagination';
+import { usePagination } from '../../utils/usePagination';
 import {
   Layers,
   ArrowDownLeft,
@@ -113,6 +115,18 @@ export const StockManagementView = () => {
       return matchQuery && isMatchCategory;
     });
   }, [mutations, searchQuery, mutationTypeFilter]);
+
+  const inventoryPagination = usePagination({
+    items: filteredProducts,
+    initialPageSize: 10,
+    resetDeps: [searchQuery, selectedCategory, stockFilter],
+  });
+
+  const mutationsPagination = usePagination({
+    items: filteredMutations,
+    initialPageSize: 15,
+    resetDeps: [searchQuery, mutationTypeFilter],
+  });
 
   const resetForms = () => {
     setRestockQty('');
@@ -412,7 +426,7 @@ export const StockManagementView = () => {
                     </td>
                   </tr>
                 ) : (
-                  filteredProducts.map((p) => {
+                  inventoryPagination.paginatedItems.map((p) => {
                     const isLowStock = p.stock <= (p.minStock || 5) && p.stock > 0;
                     const isOutOfStock = p.stock <= 0;
 
@@ -478,6 +492,15 @@ export const StockManagementView = () => {
                 )}
               </tbody>
             </table>
+            <Pagination
+              currentPage={inventoryPagination.currentPage}
+              totalItems={inventoryPagination.totalItems}
+              pageSize={inventoryPagination.pageSize}
+              onPageChange={inventoryPagination.setCurrentPage}
+              onPageSizeChange={inventoryPagination.setPageSize}
+              itemLabel="barang"
+              pageSizeOptions={[10, 25, 50, 100]}
+            />
           </div>
         )}
 
@@ -502,7 +525,7 @@ export const StockManagementView = () => {
                     </td>
                   </tr>
                 ) : (
-                  filteredMutations.map((mut) => {
+                  mutationsPagination.paginatedItems.map((mut) => {
                     const noteText = String(mut.reason || '').toLowerCase();
                     const refNo = String(mut.referenceNo || '');
                     const isCashierSale =
@@ -594,6 +617,15 @@ export const StockManagementView = () => {
                 )}
               </tbody>
             </table>
+            <Pagination
+              currentPage={mutationsPagination.currentPage}
+              totalItems={mutationsPagination.totalItems}
+              pageSize={mutationsPagination.pageSize}
+              onPageChange={mutationsPagination.setCurrentPage}
+              onPageSizeChange={mutationsPagination.setPageSize}
+              itemLabel="catatan mutasi"
+              pageSizeOptions={[10, 15, 25, 50, 100]}
+            />
           </div>
         )}
       </div>

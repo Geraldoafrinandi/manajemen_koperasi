@@ -4,6 +4,8 @@ import { useAuth } from '../../context/AuthContext';
 import { formatRupiah, formatTanggal } from '../../utils/formatters';
 import ReceiptModal from '../../components/pos/ReceiptModal';
 import TransactionDetailModal from '../../components/transactions/TransactionDetailModal';
+import Pagination from '../../components/common/Pagination';
+import { usePagination } from '../../utils/usePagination';
 import {
   Clock,
   Printer,
@@ -175,6 +177,19 @@ export const ShiftHistoryView = () => {
       );
     });
   }, [scopedTransactions, searchQuery]);
+
+  const {
+    currentPage,
+    setCurrentPage,
+    pageSize,
+    setPageSize,
+    paginatedItems: paginatedTransactions,
+    totalItems,
+  } = usePagination({
+    items: filteredTransactions,
+    initialPageSize: 15,
+    resetDeps: [searchQuery, datePreset, startDate, endDate, paymentFilter],
+  });
 
   const handleOpenReceipt = (trx) => {
     setSelectedTransaction(trx);
@@ -426,7 +441,7 @@ export const ShiftHistoryView = () => {
                   </td>
                 </tr>
               ) : (
-                filteredTransactions.map((trx) => {
+                paginatedTransactions.map((trx) => {
                   const itemsCount = (trx.items || []).reduce((acc, i) => acc + (i.quantity || 1), 0);
 
                   return (
@@ -493,6 +508,16 @@ export const ShiftHistoryView = () => {
             </tbody>
           </table>
         </div>
+
+        <Pagination
+          currentPage={currentPage}
+          totalItems={totalItems}
+          pageSize={pageSize}
+          onPageChange={setCurrentPage}
+          onPageSizeChange={setPageSize}
+          itemLabel="transaksi kasir"
+          pageSizeOptions={[10, 15, 25, 50, 100]}
+        />
       </div>
 
       <TransactionDetailModal

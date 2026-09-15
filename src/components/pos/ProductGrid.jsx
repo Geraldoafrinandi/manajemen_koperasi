@@ -11,6 +11,8 @@ import {
   X,
 } from 'lucide-react';
 import Badge from '../common/Badge';
+import Pagination from '../common/Pagination';
+import { usePagination } from '../../utils/usePagination';
 
 export const ProductGrid = ({ onOpenScanner, onAddNewProduct }) => {
   const { products } = useProducts();
@@ -35,6 +37,19 @@ export const ProductGrid = ({ onOpenScanner, onAddNewProduct }) => {
       return matchQuery;
     });
   }, [products, searchQuery]);
+
+  const {
+    currentPage,
+    setCurrentPage,
+    pageSize,
+    setPageSize,
+    paginatedItems: paginatedProducts,
+    totalItems,
+  } = usePagination({
+    items: filteredProducts,
+    initialPageSize: 12,
+    resetDeps: [searchQuery],
+  });
 
   const handleManualBarcodeSubmit = (e) => {
     e.preventDefault();
@@ -152,7 +167,7 @@ export const ProductGrid = ({ onOpenScanner, onAddNewProduct }) => {
           </div>
         ) : (
           <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-3.5">
-            {filteredProducts.map((product) => {
+            {paginatedProducts.map((product) => {
               const isOutOfStock = product.stock <= 0;
               const isLowStock = product.stock <= (product.minStock || 5) && product.stock > 0;
 
@@ -218,6 +233,17 @@ export const ProductGrid = ({ onOpenScanner, onAddNewProduct }) => {
           </div>
         )}
       </div>
+
+      <Pagination
+        currentPage={currentPage}
+        totalItems={totalItems}
+        pageSize={pageSize}
+        onPageChange={setCurrentPage}
+        onPageSizeChange={setPageSize}
+        itemLabel="produk"
+        pageSizeOptions={[12, 24, 36, 48]}
+        className="mt-2 pt-2 border-t border-slate-100 px-0"
+      />
     </div>
   );
 };
