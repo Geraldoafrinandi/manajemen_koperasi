@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useProducts } from '../../context/ProductContext';
-import { formatRupiah, formatTanggal } from '../../utils/formatters';
+import { formatRupiah, formatTanggal, getLocalYYYYMMDD } from '../../utils/formatters';
 import ReceiptModal from '../../components/pos/ReceiptModal';
 import TransactionDetailModal from '../../components/transactions/TransactionDetailModal';
 import {
@@ -41,7 +41,7 @@ export const TransactionsView = () => {
 
       let matchDate = true;
       if (dateFilter) {
-        matchDate = trx.createdAt && trx.createdAt.startsWith(dateFilter);
+        matchDate = trx.createdAt && getLocalYYYYMMDD(trx.createdAt).startsWith(dateFilter);
       }
 
       return matchQuery && matchDate;

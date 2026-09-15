@@ -1,5 +1,6 @@
 import api from './api';
 import { normalizeTransaction } from './transactionService';
+import { getLocalYYYYMMDD } from '../utils/formatters';
 
 class ReportService {
   // Laporan Penjualan (Admin)
@@ -151,13 +152,13 @@ class ReportService {
     const thisMonthStr = new Date().toISOString().slice(0, 7);
 
     // Today Transactions
-    const todayTrx = (transactions || []).filter((t) => t.createdAt && t.createdAt.startsWith(todayStr));
+    const todayTrx = (transactions || []).filter((t) => t.createdAt && getLocalYYYYMMDD(t.createdAt) === todayStr);
     const todayRevenue = todayTrx.reduce((sum, t) => sum + (t.grandTotal || 0), 0);
     const todayCost = todayTrx.reduce((sum, t) => sum + (t.totalCost || 0), 0);
     const todayProfit = todayRevenue - todayCost;
 
     // This Month Transactions
-    const monthTrx = (transactions || []).filter((t) => t.createdAt && t.createdAt.startsWith(thisMonthStr));
+    const monthTrx = (transactions || []).filter((t) => t.createdAt && getLocalYYYYMMDD(t.createdAt).startsWith(thisMonthStr));
     const monthRevenue = monthTrx.reduce((sum, t) => sum + (t.grandTotal || 0), 0);
     const monthCost = monthTrx.reduce((sum, t) => sum + (t.totalCost || 0), 0);
     const monthProfit = monthRevenue - monthCost;
@@ -173,7 +174,7 @@ class ReportService {
       const d = new Date();
       d.setDate(d.getDate() - i);
       const dateStr = d.toISOString().slice(0, 10);
-      const dayTrx = (transactions || []).filter((t) => t.createdAt && t.createdAt.startsWith(dateStr));
+      const dayTrx = (transactions || []).filter((t) => t.createdAt && getLocalYYYYMMDD(t.createdAt) === dateStr);
       const dayRevenue = dayTrx.reduce((sum, t) => sum + (t.grandTotal || 0), 0);
       const dayCost = dayTrx.reduce((sum, t) => sum + (t.totalCost || 0), 0);
       last7Days.push({

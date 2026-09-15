@@ -58,6 +58,16 @@ export const formatTanggal = (dateString, withTime = false) => {
   return new Intl.DateTimeFormat('id-ID', options).format(date);
 };
 
+export const getLocalYYYYMMDD = (dateString) => {
+  if (!dateString) return '';
+  const d = new Date(dateString);
+  if (isNaN(d.getTime())) return '';
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
+
 export const formatTanggalShort = (dateString, withTime = false) => {
   if (!dateString) return '-';
   const date = new Date(dateString);
@@ -111,7 +121,7 @@ export const generateInvoiceNumber = () => {
  * @param {string} category 
  * @returns {string}
  */
-export const generateBarcode = (category = 'GEN') => {
+export const generateBarcode = () => {
   const prefix = '899'; // Kode standar Indonesia / Koperasi
   const randNum = Math.floor(100000000 + Math.random() * 900000000);
   return `${prefix}${randNum}`;
