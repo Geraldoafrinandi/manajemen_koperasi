@@ -323,7 +323,6 @@ class TransactionService {
     }
 
     const raw = res.data?.sale || res.data?.transaction || res.data?.data || res.data || res;
-    
     const returnMethod = (raw?.payment_method && raw?.payment_method !== 'Cash')
       ? raw.payment_method
       : (paymentMethod || raw?.payment_method || raw?.paymentMethod || 'Cash');

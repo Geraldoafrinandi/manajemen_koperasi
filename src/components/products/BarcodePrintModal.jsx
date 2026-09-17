@@ -1,20 +1,21 @@
 import { useState } from 'react';
 import Modal from '../common/Modal';
 import { BarcodeSvg } from '../../utils/barcodeGenerator';
-import { formatRupiah } from '../../utils/formatters';
 import { printBarcodeLabels } from '../../utils/printBarcodeHelper';
-import { Printer, X, Tag, Copy, CheckCircle2 } from 'lucide-react';
+import {
+  Printer,
+  CreditCard,
+  Scissors,
+  Info,
+} from 'lucide-react';
 
 export const BarcodePrintModal = ({
   isOpen,
   onClose,
   productName = 'Produk Koperasi',
   barcode = '899123456789',
-  price = 0,
-  institutionName = 'KOPERASI SD IT PERMATA',
 }) => {
-  const [copies, setCopies] = useState(4);
-  const [layoutMode, setLayoutMode] = useState('grid'); // 'grid' (A4 stiker sheet) | 'single' (Thermal label)
+  const [copies, setCopies] = useState(4); // Max 4 per HVS
 
   if (!isOpen) return null;
 
@@ -22,8 +23,6 @@ export const BarcodePrintModal = ({
     printBarcodeLabels({
       productName,
       barcode,
-      price,
-      institutionName,
       copies,
     });
   };
@@ -32,98 +31,111 @@ export const BarcodePrintModal = ({
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title="Cetak Label & Stiker Barcode"
-      size="lg"
+      title="Cetak Barcode Ukuran Dompet Kartu"
+      subtitle={`Ukuran kartu dompet & laminasi (9.0 × 5.8 cm) • Maksimal 4 barcode per 1 lembar kertas HVS`}
+      maxWidth="max-w-3xl"
     >
-      <div className="space-y-5">
+      <div className="space-y-4">
         {/* Controls Bar */}
-        <div className="p-4 bg-slate-50 border border-slate-200 rounded-2xl flex flex-wrap items-center justify-between gap-3 no-print">
-          <div className="flex items-center space-x-3">
-            <label className="text-xs font-bold text-slate-700">Jumlah Cetak:</label>
-            <div className="flex items-center space-x-1">
-              {[1, 2, 4, 8, 12].map((num) => (
+        <div className="p-4 bg-slate-50 border border-slate-200/90 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-2xs">
+          <div className="flex items-center space-x-2">
+            <CreditCard className="w-4 h-4 text-emerald-700" />
+            <span className="text-xs font-extrabold text-slate-800">
+              Ukuran Dompet Kartu & Laminasi (9.0 × 5.8 cm)
+            </span>
+          </div>
+
+          <div className="flex items-center space-x-2">
+            <span className="text-xs font-bold text-slate-600 shrink-0">
+              Jumlah Print:
+            </span>
+            <div className="flex items-center space-x-1.5 bg-white p-1 rounded-xl border border-slate-200 shadow-2xs">
+              {[1, 2, 3, 4].map((num) => (
                 <button
                   key={num}
                   type="button"
                   onClick={() => setCopies(num)}
-                  className={`px-2.5 py-1 text-xs font-bold rounded-lg border transition-all cursor-pointer ${
+                  className={`px-3 py-1 text-xs font-bold rounded-lg transition-all cursor-pointer ${
                     copies === num
-                      ? 'bg-emerald-600 text-white border-emerald-600 shadow-2xs'
-                      : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-100'
+                      ? 'bg-emerald-600 text-white shadow-xs'
+                      : 'text-slate-700 hover:bg-slate-100'
                   }`}
                 >
                   {num}x
                 </button>
               ))}
-              <input
-                type="number"
-                min="1"
-                max="50"
-                value={copies}
-                onChange={(e) => setCopies(Math.max(1, parseInt(e.target.value, 10) || 1))}
-                className="w-14 px-2 py-1 bg-white border border-slate-200 rounded-lg text-xs font-bold text-center"
-              />
             </div>
-          </div>
-
-          <div className="flex items-center space-x-2">
-            <button
-              type="button"
-              onClick={handlePrint}
-              className="flex items-center space-x-1.5 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs rounded-xl shadow-xs transition-all cursor-pointer active:scale-95"
-            >
-              <Printer className="w-4 h-4" />
-              <span>Cetak Sekarang ({copies} Label)</span>
-            </button>
           </div>
         </div>
 
-        {/* Live Preview Area (Screen & Printable on Print Mode) */}
-        <div className="p-5 bg-slate-100/70 border border-slate-200 rounded-2xl max-h-[60vh] overflow-y-auto">
-          <div className="text-center mb-3 no-print">
-            <span className="text-[11px] font-semibold text-slate-500">
-              Pratinjau label stiker barcode yang siap dicetak ke printer kertas atau printer stiker:
+        {/* Tips Info Banner */}
+        <div className="flex items-start space-x-2.5 p-3 bg-emerald-50/80 border border-emerald-200/80 rounded-xl text-xs text-emerald-900">
+          <Info className="w-4 h-4 text-emerald-700 shrink-0 mt-0.5" />
+          <p className="leading-relaxed">
+            <strong className="font-extrabold text-emerald-950">
+              Ukuran Pas Dompet Kartu (9.0 × 5.8 cm):
+            </strong>{' '}
+            Barcode dan nama barang diperbesar optimal agar mudah discan kasir dan pas dimasukkan ke slot dompet kartu ataupun plastik pouch laminasi.
+          </p>
+        </div>
+
+        {/* Live Preview Area */}
+        <div className="p-4 sm:p-5 bg-slate-100/80 border border-slate-200 rounded-2xl max-h-[440px] overflow-y-auto">
+          <div className="flex items-center justify-between mb-3 pb-2 border-b border-slate-200">
+            <div className="flex items-center space-x-2">
+              <Scissors className="w-4 h-4 text-slate-500" />
+              <span className="text-xs font-extrabold uppercase tracking-wider text-slate-700">
+                Pratinjau Kertas HVS ({copies} dari 4 Slot)
+              </span>
+            </div>
+            <span className="text-[11px] font-bold text-slate-500">
+              Layout 2 Kolom × 2 Baris (9.0 × 5.8 cm)
             </span>
           </div>
 
-          <div
-            id="printable-barcode-area"
-            className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 gap-3.5 justify-center items-center max-w-2xl mx-auto"
-          >
-            {Array.from({ length: copies }).map((_, idx) => (
-              <div
-                key={idx}
-                className="bg-white border-2 border-dashed border-slate-300 p-3.5 rounded-xl shadow-2xs flex flex-col items-center justify-between text-center space-y-1.5 min-w-[220px] print:border-solid print:border-black print:rounded-none print:shadow-none print:break-inside-avoid print:p-2"
-                style={{ pageBreakInside: 'avoid' }}
-              >
-                {/* Header Stiker */}
-                <div className="border-b border-slate-200 pb-1 w-full print:border-black">
-                  <p className="text-[10px] font-extrabold tracking-wider uppercase text-slate-700 print:text-black">
-                    {institutionName}
-                  </p>
-                  <p className="text-xs font-bold text-slate-900 line-clamp-1 print:text-black">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-2xl mx-auto p-4 bg-white rounded-2xl border-2 border-slate-300 shadow-sm">
+            {Array.from({ length: 4 }).map((_, idx) => {
+              const isFilled = idx < copies;
+
+              if (!isFilled) {
+                return (
+                  <div
+                    key={idx}
+                    className="rounded-2xl border-2 border-dashed border-slate-200 p-4 min-h-[185px] flex flex-col items-center justify-center text-slate-300 bg-slate-50/50"
+                  >
+                    <span className="text-xs font-bold text-slate-400">
+                      Slot #{idx + 1} (Kosong)
+                    </span>
+                  </div>
+                );
+              }
+
+              return (
+                <div
+                  key={idx}
+                  className="bg-white border-2 border-dashed border-slate-400 rounded-2xl shadow-2xs flex flex-col items-center justify-center text-center hover:border-emerald-500 transition-all p-4 min-h-[185px]"
+                >
+                  <h5 className="text-sm sm:text-base font-extrabold text-slate-900 line-clamp-1 leading-snug mb-2 max-w-[96%]">
                     {productName}
-                  </p>
-                </div>
+                  </h5>
 
-                {/* SVG Barcode Vector */}
-                <div className="py-1 flex justify-center w-full">
-                  <BarcodeSvg value={barcode} barWidth={1.7} height={42} showText={true} />
+                  <div className="w-full flex flex-col items-center justify-center">
+                    <BarcodeSvg
+                      value={barcode}
+                      barWidth={2.05}
+                      height={52}
+                      fontSize={13}
+                      showText={true}
+                    />
+                  </div>
                 </div>
-
-                {/* Footer Harga */}
-                <div className="border-t border-slate-200 pt-1 w-full print:border-black">
-                  <p className="text-xs font-black text-emerald-800 print:text-black">
-                    {formatRupiah(price)}
-                  </p>
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
 
         {/* Modal Actions */}
-        <div className="flex justify-end space-x-2 pt-2 border-t border-slate-100 no-print">
+        <div className="flex justify-end space-x-2 pt-2 border-t border-slate-100">
           <button
             type="button"
             onClick={onClose}
@@ -134,10 +146,10 @@ export const BarcodePrintModal = ({
           <button
             type="button"
             onClick={handlePrint}
-            className="flex items-center space-x-1.5 px-5 py-2 bg-slate-900 hover:bg-black text-white font-extrabold text-xs rounded-xl shadow-xs transition-all cursor-pointer active:scale-95"
+            className="flex items-center space-x-2 px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs sm:text-sm rounded-xl shadow-xs transition-all cursor-pointer active:scale-95"
           >
-            <Printer className="w-4 h-4 text-emerald-400" />
-            <span>Print Label Barcode</span>
+            <Printer className="w-4 h-4" />
+            <span>Cetak {copies} Barcode (Kertas HVS)</span>
           </button>
         </div>
       </div>

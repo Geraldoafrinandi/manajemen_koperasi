@@ -88,10 +88,11 @@ export const BarcodeSvg = ({
   barWidth = 1.8,
   height = 45,
   showText = true,
+  fontSize = 11,
   className = '',
 }) => {
   const { rects, totalWidth } = getBarcodeRects(value || '00000000', barWidth, height);
-  const totalSvgHeight = showText ? height + 16 : height;
+  const totalSvgHeight = showText ? height + fontSize + 6 : height;
 
   return (
     <div className={`inline-flex flex-col items-center select-none ${className}`}>
@@ -114,10 +115,10 @@ export const BarcodeSvg = ({
         {showText && (
           <text
             x={totalWidth / 2}
-            y={height + 13}
+            y={height + fontSize + 2}
             textAnchor="middle"
-            fontFamily="monospace"
-            fontSize="11"
+            fontFamily="'Courier New', Courier, monospace"
+            fontSize={fontSize}
             fontWeight="bold"
             letterSpacing="2"
             fill="#000000"
@@ -133,17 +134,23 @@ export const BarcodeSvg = ({
 /**
  * Generate raw SVG string of Barcode (for isolated print iframes/windows)
  */
-export const getBarcodeSvgString = (value, barWidth = 1.6, height = 40, showText = true) => {
+export const getBarcodeSvgString = (
+  value,
+  barWidth = 1.6,
+  height = 40,
+  showText = true,
+  fontSize = 11
+) => {
   const { rects, totalWidth } = getBarcodeRects(value || '00000000', barWidth, height);
-  const totalSvgHeight = showText ? height + 16 : height;
+  const totalSvgHeight = showText ? height + fontSize + 6 : height;
   const rectsMarkup = rects
     .map((r) => `<rect x="${r.x}" y="2" width="${r.width}" height="${r.height}" fill="#000000" />`)
     .join('');
   const textMarkup = showText
-    ? `<text x="${totalWidth / 2}" y="${height + 13}" text-anchor="middle" font-family="monospace" font-size="11" font-weight="bold" letter-spacing="1" fill="#000000">${value || ''}</text>`
+    ? `<text x="${totalWidth / 2}" y="${height + fontSize + 2}" text-anchor="middle" font-family="'Courier New', Courier, monospace" font-size="${fontSize}" font-weight="bold" letter-spacing="2" fill="#000000">${value || ''}</text>`
     : '';
 
-  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${totalWidth} ${totalSvgHeight}" width="${totalWidth}" height="${totalSvgHeight}" style="max-width: 100%; height: auto;"><rect width="${totalWidth}" height="${totalSvgHeight}" fill="#FFFFFF" />${rectsMarkup}${textMarkup}</svg>`;
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${totalWidth} ${totalSvgHeight}" width="${totalWidth}" height="${totalSvgHeight}" style="max-width: 100%; height: auto; display: block; margin: 0 auto;"><rect width="${totalWidth}" height="${totalSvgHeight}" fill="#FFFFFF" />${rectsMarkup}${textMarkup}</svg>`;
 };
 
 export default BarcodeSvg;

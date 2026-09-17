@@ -1,33 +1,28 @@
 import { getBarcodeSvgString } from './barcodeGenerator';
-import { formatRupiah } from './formatters';
 
 /**
- * Print barcode sticker labels directly in an isolated print document.
- * This guarantees the background web dashboard never leaks into the print preview.
+ * Print barcode cards sized for Card Wallet / Laminating Pouch (90mm x 58mm).
+ * Layout: Max 4 cards per 1 HVS / A4 paper (2 columns x 2 rows).
+ * Content: Minimal & clean — only product name and barcode.
  */
 export const printBarcodeLabels = ({
   productName = 'Produk Koperasi',
   barcode = '899123456789',
-  price = 0,
-  institutionName = 'KOPERASI SD IT PERMATA',
-  copies = 4,
+  copies = 4, // Max 4 per HVS sheet
 }) => {
-  const barcodeSvgHtml = getBarcodeSvgString(barcode, 1.6, 38, true);
-  const formattedPrice = formatRupiah(price);
+  // Clamp copies to 1..4 (1 HVS sheet max)
+  const validCopies = Math.max(1, Math.min(4, copies));
+
+  // Sized larger for card wallet / laminating pouch (90mm x 58mm)
+  const barcodeSvgHtml = getBarcodeSvgString(barcode, 2.05, 52, true, 13);
 
   let cardsHtml = '';
-  for (let i = 0; i < copies; i++) {
+  for (let i = 0; i < validCopies; i++) {
     cardsHtml += `
-      <div class="sticker-card">
-        <div class="sticker-header">
-          <div class="institution">${institutionName}</div>
-          <div class="product-title" title="${productName}">${productName}</div>
-        </div>
+      <div class="atm-card">
+        <div class="product-title" title="${productName}">${productName}</div>
         <div class="barcode-wrapper">
           ${barcodeSvgHtml}
-        </div>
-        <div class="sticker-footer">
-          <div class="price-tag">${formattedPrice}</div>
         </div>
       </div>
     `;
@@ -38,11 +33,11 @@ export const printBarcodeLabels = ({
     <html lang="id">
     <head>
       <meta charset="UTF-8">
-      <title>Cetak Label Stiker Barcode - ${productName}</title>
+      <title>Cetak Barcode Dompet Kartu - ${productName}</title>
       <style>
         @page {
           size: A4 portrait;
-          margin: 10mm 12mm;
+          margin: 18mm 10mm;
         }
         * {
           box-sizing: border-box;
@@ -53,89 +48,85 @@ export const printBarcodeLabels = ({
           font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
           background: #ffffff;
           color: #000000;
-          padding: 10px;
+          padding: 0;
           -webkit-print-color-adjust: exact;
           print-color-adjust: exact;
         }
-        .sticker-grid {
+
+        /* 1 HVS / A4 Sheet: 2 Columns x 2 Rows (Max 4 Cards per HVS) */
+        .hvs-sheet {
           display: grid;
-          grid-template-columns: repeat(3, 1fr);
-          gap: 12px;
+          grid-template-columns: repeat(2, 90mm);
+          grid-template-rows: repeat(2, 58mm);
+          gap: 24mm 8mm;
           justify-content: center;
+          align-content: center;
+          min-height: 250mm;
+          box-sizing: border-box;
         }
-        .sticker-card {
-          border: 1.5px dashed #475569;
-          border-radius: 8px;
-          padding: 8px 6px;
-          text-align: center;
+
+        /* Card Wallet / Laminating Dimensions (90mm x 58mm) */
+        .atm-card {
+          width: 90mm;
+          height: 58mm;
+          max-width: 90mm;
+          max-height: 58mm;
+          border: 1.5px dashed #000000;
+          border-radius: 4px;
+          padding: 4.5mm 5mm;
           background: #ffffff;
           display: flex;
           flex-direction: column;
           align-items: center;
-          justify-content: space-between;
+          justify-content: center;
+          text-align: center;
+          box-sizing: border-box;
           page-break-inside: avoid;
           break-inside: avoid;
-          min-height: 110px;
+          position: relative;
+          overflow: hidden;
         }
-        .sticker-header {
-          border-bottom: 1px solid #cbd5e1;
-          padding-bottom: 3px;
-          width: 100%;
-        }
-        .institution {
-          font-size: 8px;
-          font-weight: 800;
-          letter-spacing: 0.6px;
-          text-transform: uppercase;
-          color: #334155;
-        }
+
         .product-title {
-          font-size: 11px;
+          font-size: 11.5pt;
           font-weight: 800;
-          color: #0f172a;
-          margin-top: 1px;
+          color: #000000;
+          line-height: 1.3;
+          margin-bottom: 2.5mm;
+          max-width: 96%;
           white-space: nowrap;
           overflow: hidden;
           text-overflow: ellipsis;
         }
+
         .barcode-wrapper {
-          padding: 4px 0;
           display: flex;
           justify-content: center;
           align-items: center;
           width: 100%;
         }
+
         .barcode-wrapper svg {
-          max-width: 100%;
+          max-width: 98%;
           height: auto;
           display: block;
         }
-        .sticker-footer {
-          border-top: 1px solid #cbd5e1;
-          padding-top: 3px;
-          width: 100%;
-        }
-        .price-tag {
-          font-size: 12px;
-          font-weight: 900;
-          color: #065f46;
-        }
+
         @media print {
           body {
             padding: 0;
           }
-          .sticker-card {
-            border: 1px solid #000000;
-            border-radius: 4px;
+          .atm-card {
+            border: 1.5px dashed #000000;
           }
-          .price-tag {
+          .product-title {
             color: #000000;
           }
         }
       </style>
     </head>
     <body>
-      <div class="sticker-grid">
+      <div class="hvs-sheet">
         ${cardsHtml}
       </div>
     </body>
