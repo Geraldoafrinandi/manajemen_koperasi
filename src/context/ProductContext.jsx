@@ -544,19 +544,40 @@ export const ProductProvider = ({ children }) => {
 
   const removeBarcodeRequest = async (idOrBarcode) => {
     const clean = String(idOrBarcode || '').trim();
-    await barcodeRequestService.delete(clean);
+    storageService.removeBarcodeRequest(clean);
     setBarcodeRequests((prev) =>
       prev.filter((r) => r.id !== clean && String(r.barcode).trim() !== clean)
     );
+    try {
+      await barcodeRequestService.delete(clean);
+    } catch (e) {
+      console.warn('Error removing barcode request:', e);
+    }
   };
 
   const completeBarcodeRequest = async (idOrBarcode) => {
     const clean = String(idOrBarcode || '').trim();
-    await barcodeRequestService.delete(clean);
+    storageService.completeBarcodeRequest(clean);
     setBarcodeRequests((prev) =>
       prev.filter((r) => r.id !== clean && String(r.barcode).trim() !== clean)
     );
-    await refreshProducts();
+    try {
+      await barcodeRequestService.delete(clean);
+    } catch (e) {
+      console.warn('Error completing barcode request:', e);
+    }
+  };
+
+  const clearAllBarcodeRequests = async () => {
+    storageService.clearBarcodeRequests();
+    setBarcodeRequests([]);
+    try {
+      await barcodeRequestService.clearAll();
+    } catch (e) {
+      console.warn('Error clearing barcode requests:', e);
+    }
+    storageService.clearBarcodeRequests();
+    setBarcodeRequests([]);
   };
 
   const pendingBarcodeRequests = (barcodeRequests || []).filter((r) => r.status !== 'completed');
@@ -579,6 +600,7 @@ export const ProductProvider = ({ children }) => {
         addBarcodeRequest,
         removeBarcodeRequest,
         completeBarcodeRequest,
+        clearAllBarcodeRequests,
         coopProfile: coopProfile || {},
         loading,
         refreshProducts,

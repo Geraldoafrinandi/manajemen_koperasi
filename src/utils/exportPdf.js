@@ -283,6 +283,38 @@ export const generateReportPdfDoc = (
 
   let currentY = titleY + 9.5;
 
+  const transactions = reportData.transactions || [];
+  let cashTotal = Number(
+    reportData.paymentMethods?.Cash?.total ??
+    reportData.paymentMethods?.CASH?.total ??
+    0
+  );
+  let qrisTotal = Number(
+    reportData.paymentMethods?.QRIS?.total ??
+    0
+  );
+  let transferTotal = Number(
+    reportData.paymentMethods?.Transfer?.total ??
+    reportData.paymentMethods?.TRANSFER?.total ??
+    0
+  );
+
+  if (cashTotal === 0 && qrisTotal === 0 && transferTotal === 0 && transactions.length > 0) {
+    transactions.forEach((t) => {
+      const pm = String(t.paymentMethod || 'CASH').toUpperCase();
+      const amount = Number(t.grandTotal || t.total || 0);
+      if (pm === 'CASH' || pm === 'TUNAI') {
+        cashTotal += amount;
+      } else if (pm === 'QRIS') {
+        qrisTotal += amount;
+      } else if (pm === 'TRANSFER') {
+        transferTotal += amount;
+      } else {
+        cashTotal += amount;
+      }
+    });
+  }
+
   if (isDaily) {
     const itemRows = flattenTransactionsToItems(reportData.transactions || []);
     const totalRevenue =
@@ -367,13 +399,46 @@ export const generateReportPdfDoc = (
       foot: [
         [
           {
-            content: 'TOTAL:',
+            content: 'TOTAL PENJUALAN (OMSET):',
             colSpan: 7,
             styles: { halign: 'right', fontStyle: 'bold' },
           },
           {
             content: formatRupiah(totalRevenue),
             styles: { halign: 'right', fontStyle: 'bold' },
+          },
+        ],
+        [
+          {
+            content: '• Total Pembayaran Tunai (Cash):',
+            colSpan: 7,
+            styles: { halign: 'right', fontStyle: 'normal' },
+          },
+          {
+            content: formatRupiah(cashTotal),
+            styles: { halign: 'right', fontStyle: 'normal' },
+          },
+        ],
+        [
+          {
+            content: '• Total Pembayaran QRIS:',
+            colSpan: 7,
+            styles: { halign: 'right', fontStyle: 'normal' },
+          },
+          {
+            content: formatRupiah(qrisTotal),
+            styles: { halign: 'right', fontStyle: 'normal' },
+          },
+        ],
+        [
+          {
+            content: '• Total Pembayaran Transfer Bank:',
+            colSpan: 7,
+            styles: { halign: 'right', fontStyle: 'normal' },
+          },
+          {
+            content: formatRupiah(transferTotal),
+            styles: { halign: 'right', fontStyle: 'normal' },
           },
         ],
       ],
@@ -468,13 +533,46 @@ export const generateReportPdfDoc = (
       foot: [
         [
           {
-            content: 'TOTAL:',
+            content: 'TOTAL PENJUALAN (OMSET):',
             colSpan: 6,
             styles: { halign: 'right', fontStyle: 'bold' },
           },
           {
             content: formatRupiah(totalRevenue),
             styles: { halign: 'right', fontStyle: 'bold' },
+          },
+        ],
+        [
+          {
+            content: '• Total Pembayaran Tunai (Cash):',
+            colSpan: 6,
+            styles: { halign: 'right', fontStyle: 'normal' },
+          },
+          {
+            content: formatRupiah(cashTotal),
+            styles: { halign: 'right', fontStyle: 'normal' },
+          },
+        ],
+        [
+          {
+            content: '• Total Pembayaran QRIS:',
+            colSpan: 6,
+            styles: { halign: 'right', fontStyle: 'normal' },
+          },
+          {
+            content: formatRupiah(qrisTotal),
+            styles: { halign: 'right', fontStyle: 'normal' },
+          },
+        ],
+        [
+          {
+            content: '• Total Pembayaran Transfer Bank:',
+            colSpan: 6,
+            styles: { halign: 'right', fontStyle: 'normal' },
+          },
+          {
+            content: formatRupiah(transferTotal),
+            styles: { halign: 'right', fontStyle: 'normal' },
           },
         ],
       ],

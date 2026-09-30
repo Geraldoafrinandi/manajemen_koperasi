@@ -51,8 +51,9 @@ function barcodeRequestsSyncPlugin() {
             req.on('end', () => {
               try {
                 const parsedUrl = new URL(req.url, 'http://localhost');
-                const queryBarcode = parsedUrl.searchParams.get('barcode');
-                const queryId = parsedUrl.searchParams.get('id');
+                const isAll =
+                  parsedUrl.pathname.endsWith('/all') ||
+                  parsedUrl.searchParams.get('all') === 'true';
 
                 let data = {};
                 if (body) {
@@ -61,16 +62,36 @@ function barcodeRequestsSyncPlugin() {
                   } catch (err) {}
                 }
 
+                if (isAll || data.all === true) {
+                  syncedBarcodeRequests.clear();
+                  res.setHeader('Content-Type', 'application/json');
+                  res.end(JSON.stringify({ success: true, data: [] }));
+                  return;
+                }
+
+                const queryBarcode = parsedUrl.searchParams.get('barcode');
+                const queryId = parsedUrl.searchParams.get('id');
                 const barcode = String(queryBarcode || data.barcode || '').trim();
                 const id = String(queryId || data.id || '').trim();
 
-                if (barcode) {
-                  syncedBarcodeRequests.delete(barcode);
-                }
-                if (id) {
-                  syncedBarcodeRequests.delete(id);
-                  for (const [k, v] of syncedBarcodeRequests.entries()) {
-                    if (v.id === id || v.barcode === id) syncedBarcodeRequests.delete(k);
+                if (barcode === 'all' || id === 'all') {
+                  syncedBarcodeRequests.clear();
+                } else {
+                  if (barcode) {
+                    syncedBarcodeRequests.delete(barcode);
+                    for (const [k, v] of syncedBarcodeRequests.entries()) {
+                      if (v.barcode === barcode || v.id === barcode || k === barcode) {
+                        syncedBarcodeRequests.delete(k);
+                      }
+                    }
+                  }
+                  if (id) {
+                    syncedBarcodeRequests.delete(id);
+                    for (const [k, v] of syncedBarcodeRequests.entries()) {
+                      if (v.id === id || v.barcode === id || k === id) {
+                        syncedBarcodeRequests.delete(k);
+                      }
+                    }
                   }
                 }
 

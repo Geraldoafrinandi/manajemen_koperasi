@@ -7,6 +7,7 @@ import {
   flattenTransactionsToItems,
   aggregateMonthlyDailySales,
 } from '../../utils/exportPdf';
+import { exportReportToExcel } from '../../utils/exportExcel';
 import {
   formatRupiah,
   formatTanggal,
@@ -20,6 +21,7 @@ import { usePagination } from '../../utils/usePagination';
 import {
   FileText,
   Printer,
+  FileSpreadsheet,
   Calendar,
   CalendarDays,
   Clock,
@@ -197,6 +199,42 @@ export const MonthlyReportsView = () => {
     summary.profitMargin ||
     (totalOmset > 0 ? ((netProfit / totalOmset) * 100).toFixed(1) : '0.0');
 
+  const { cashTotal, qrisTotal, transferTotal } = useMemo(() => {
+    let cTotal = Number(
+      reportData.paymentMethods?.Cash?.total ??
+      reportData.paymentMethods?.CASH?.total ??
+      0
+    );
+    let qTotal = Number(
+      reportData.paymentMethods?.QRIS?.total ??
+      0
+    );
+    let tTotal = Number(
+      reportData.paymentMethods?.Transfer?.total ??
+      reportData.paymentMethods?.TRANSFER?.total ??
+      0
+    );
+
+    const transactions = reportData.transactions || [];
+    if (cTotal === 0 && qTotal === 0 && tTotal === 0 && transactions.length > 0) {
+      transactions.forEach((t) => {
+        const pm = String(t.paymentMethod || 'CASH').toUpperCase();
+        const amount = Number(t.grandTotal || t.total || 0);
+        if (pm === 'CASH' || pm === 'TUNAI') {
+          cTotal += amount;
+        } else if (pm === 'QRIS') {
+          qTotal += amount;
+        } else if (pm === 'TRANSFER') {
+          tTotal += amount;
+        } else {
+          cTotal += amount;
+        }
+      });
+    }
+
+    return { cashTotal: cTotal, qrisTotal: qTotal, transferTotal: tTotal };
+  }, [reportData.paymentMethods, reportData.transactions]);
+
   const handlePrintOfficial = () => {
     window.print();
   };
@@ -212,6 +250,21 @@ export const MonthlyReportsView = () => {
       toast.success(`Laporan PDF periode ${periodLabel} berhasil didownload.`);
     } catch (e) {
       toast.error('Gagal membuat file PDF laporan.');
+    }
+  };
+
+  const handleExportExcel = () => {
+    try {
+      exportReportToExcel(
+        reportData,
+        coopProfile,
+        periodLabel,
+        isDaily ? 'DAILY' : 'MONTHLY'
+      );
+      toast.success(`Laporan Excel (${isDaily ? 'Harian' : 'Bulanan'}) berhasil didownload.`);
+    } catch (e) {
+      console.error('Gagal export Excel:', e);
+      toast.error('Gagal mengekspor laporan ke file Excel.');
     }
   };
 
@@ -244,13 +297,21 @@ export const MonthlyReportsView = () => {
           </p>
         </div>
 
-        <div className="flex items-center space-x-2">
+        <div className="flex items-center space-x-2 flex-wrap gap-y-2">
+          <button
+            onClick={handleExportExcel}
+            className="px-4 py-2.5 bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl text-xs sm:text-sm font-bold flex items-center space-x-2 transition-all shadow-xs cursor-pointer"
+            title="Download file Excel (.xlsx)"
+          >
+            <FileSpreadsheet className="w-4 h-4" />
+            <span>Download Excel</span>
+          </button>
           <button
             onClick={() => setIsPreviewModalOpen(true)}
             className="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs sm:text-sm font-bold flex items-center space-x-2 transition-all shadow-xs cursor-pointer"
           >
             <Printer className="w-4 h-4" />
-            <span>Cetak & Download PDF</span>
+            <span>Download PDF</span>
           </button>
         </div>
       </div>
@@ -262,33 +323,30 @@ export const MonthlyReportsView = () => {
             <div className="flex bg-slate-100 p-1 rounded-xl border border-slate-200">
               <button
                 onClick={() => setFilterMode('DAILY')}
-                className={`flex items-center space-x-1.5 px-3 py-1.5 text-xs font-bold rounded-lg transition-all cursor-pointer ${
-                  filterMode === 'DAILY'
-                    ? 'bg-emerald-600 text-white shadow-xs'
-                    : 'text-slate-600 hover:text-slate-900'
-                }`}
+                className={`flex items-center space-x-1.5 px-3 py-1.5 text-xs font-bold rounded-lg transition-all cursor-pointer ${filterMode === 'DAILY'
+                  ? 'bg-emerald-600 text-white shadow-xs'
+                  : 'text-slate-600 hover:text-slate-900'
+                  }`}
               >
                 <Calendar className="w-3.5 h-3.5" />
                 <span>Laporan Harian (Per Hari)</span>
               </button>
               <button
                 onClick={() => setFilterMode('MONTH')}
-                className={`flex items-center space-x-1.5 px-3 py-1.5 text-xs font-bold rounded-lg transition-all cursor-pointer ${
-                  filterMode === 'MONTH'
-                    ? 'bg-emerald-600 text-white shadow-xs'
-                    : 'text-slate-600 hover:text-slate-900'
-                }`}
+                className={`flex items-center space-x-1.5 px-3 py-1.5 text-xs font-bold rounded-lg transition-all cursor-pointer ${filterMode === 'MONTH'
+                  ? 'bg-emerald-600 text-white shadow-xs'
+                  : 'text-slate-600 hover:text-slate-900'
+                  }`}
               >
                 <CalendarDays className="w-3.5 h-3.5" />
                 <span>Rekap Bulanan</span>
               </button>
               <button
                 onClick={() => setFilterMode('CUSTOM')}
-                className={`flex items-center space-x-1.5 px-3 py-1.5 text-xs font-bold rounded-lg transition-all cursor-pointer ${
-                  filterMode === 'CUSTOM'
-                    ? 'bg-emerald-600 text-white shadow-xs'
-                    : 'text-slate-600 hover:text-slate-900'
-                }`}
+                className={`flex items-center space-x-1.5 px-3 py-1.5 text-xs font-bold rounded-lg transition-all cursor-pointer ${filterMode === 'CUSTOM'
+                  ? 'bg-emerald-600 text-white shadow-xs'
+                  : 'text-slate-600 hover:text-slate-900'
+                  }`}
               >
                 <Clock className="w-3.5 h-3.5" />
                 <span>Rentang Tanggal</span>
@@ -300,11 +358,10 @@ export const MonthlyReportsView = () => {
             <div className="flex items-center space-x-2 flex-wrap gap-2">
               <button
                 onClick={setToday}
-                className={`px-3 py-1.5 rounded-xl text-xs font-bold border transition-colors cursor-pointer ${
-                  selectedDate === todayStr
-                    ? 'bg-emerald-50 text-emerald-700 border-emerald-300'
-                    : 'bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100'
-                }`}
+                className={`px-3 py-1.5 rounded-xl text-xs font-bold border transition-colors cursor-pointer ${selectedDate === todayStr
+                  ? 'bg-emerald-50 text-emerald-700 border-emerald-300'
+                  : 'bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100'
+                  }`}
               >
                 Hari Ini
               </button>
@@ -799,13 +856,37 @@ export const MonthlyReportsView = () => {
                     ))
                   )}
                 </tbody>
-                <tfoot className="bg-white font-bold border-t border-black text-black">
-                  <tr>
+                <tfoot className="bg-white border-t border-black text-black">
+                  <tr className="font-bold border-b border-black">
                     <td colSpan="7" className="py-1.5 px-2 text-right border border-black font-bold text-[9.5px]">
-                      TOTAL:
+                      TOTAL PENJUALAN (OMSET):
                     </td>
                     <td className="py-1.5 px-2 text-right border border-black font-mono font-bold text-[9.5px]">
                       {formatRupiah(totalOmset)}
+                    </td>
+                  </tr>
+                  <tr>
+                    <td colSpan="7" className="py-1 px-2 text-right border border-black text-[9px] text-zinc-800">
+                      • Total Pembayaran Tunai:
+                    </td>
+                    <td className="py-1 px-2 text-right border border-black font-mono text-[9px] text-black">
+                      {formatRupiah(cashTotal)}
+                    </td>
+                  </tr>
+                  <tr>
+                    <td colSpan="7" className="py-1 px-2 text-right border border-black text-[9px] text-zinc-800">
+                      • Total Pembayaran QRIS:
+                    </td>
+                    <td className="py-1 px-2 text-right border border-black font-mono text-[9px] text-black">
+                      {formatRupiah(qrisTotal)}
+                    </td>
+                  </tr>
+                  <tr>
+                    <td colSpan="7" className="py-1 px-2 text-right border border-black text-[9px] text-zinc-800">
+                      • Total Pembayaran Transfer Bank:
+                    </td>
+                    <td className="py-1 px-2 text-right border border-black font-mono text-[9px] text-black">
+                      {formatRupiah(transferTotal)}
                     </td>
                   </tr>
                 </tfoot>
@@ -845,13 +926,37 @@ export const MonthlyReportsView = () => {
                       ))
                     )}
                   </tbody>
-                  <tfoot className="bg-white font-bold border-t border-black text-black">
-                    <tr>
+                  <tfoot className="bg-white border-t border-black text-black">
+                    <tr className="font-bold border-b border-black">
                       <td colSpan="6" className="py-1.5 px-2.5 text-right border border-black font-bold text-[9.5px]">
-                        TOTAL:
+                        TOTAL PENJUALAN (OMSET):
                       </td>
                       <td className="py-1.5 px-2.5 text-right border border-black font-mono font-bold text-[9.5px]">
                         {formatRupiah(totalOmset)}
+                      </td>
+                    </tr>
+                    <tr>
+                      <td colSpan="6" className="py-1 px-2.5 text-right border border-black text-[9px] text-zinc-800">
+                        • Total Pembayaran Tunai (Cash):
+                      </td>
+                      <td className="py-1 px-2.5 text-right border border-black font-mono text-[9px] text-black">
+                        {formatRupiah(cashTotal)}
+                      </td>
+                    </tr>
+                    <tr>
+                      <td colSpan="6" className="py-1 px-2.5 text-right border border-black text-[9px] text-zinc-800">
+                        • Total Pembayaran QRIS:
+                      </td>
+                      <td className="py-1 px-2.5 text-right border border-black font-mono text-[9px] text-black">
+                        {formatRupiah(qrisTotal)}
+                      </td>
+                    </tr>
+                    <tr>
+                      <td colSpan="6" className="py-1 px-2.5 text-right border border-black text-[9px] text-zinc-800">
+                        • Total Pembayaran Transfer Bank:
+                      </td>
+                      <td className="py-1 px-2.5 text-right border border-black font-mono text-[9px] text-black">
+                        {formatRupiah(transferTotal)}
                       </td>
                     </tr>
                   </tfoot>
@@ -936,6 +1041,7 @@ export const MonthlyReportsView = () => {
         periodLabel={periodLabel}
         reportType={isDaily ? 'DAILY' : 'MONTHLY'}
         onDownload={handleExportPdf}
+        onExportExcel={handleExportExcel}
         onPrint={handlePrintOfficial}
       />
     </div>

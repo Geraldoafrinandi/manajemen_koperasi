@@ -48,11 +48,39 @@ class BarcodeRequestService {
     storageService.removeBarcodeRequest(clean);
 
     try {
-      await api.delete('/barcode-requests', {
-        data: { barcode: clean, id: clean },
-      });
+      await Promise.allSettled([
+        api.delete(`/barcode-requests/${encodeURIComponent(clean)}`),
+        api.delete('/barcode-requests', {
+          params: { barcode: clean, id: clean },
+          data: { barcode: clean, id: clean },
+        }),
+      ]);
     } catch (err) {
       console.warn('Delete barcode request error:', err.message);
+    }
+  }
+
+  async clearAll() {
+    const list = storageService.getBarcodeRequests() || [];
+    storageService.clearBarcodeRequests();
+
+    try {
+      await Promise.allSettled([
+        api.delete('/barcode-requests/all'),
+        api.delete('/barcode-requests?all=true'),
+        api.delete('/barcode-requests', {
+          params: { all: 'true', barcode: 'all', id: 'all' },
+          data: { all: true, barcode: 'all', id: 'all' },
+        }),
+        ...list.map((r) =>
+          api.delete('/barcode-requests', {
+            params: { barcode: r.barcode, id: r.id },
+            data: { barcode: r.barcode, id: r.id },
+          })
+        ),
+      ]);
+    } catch (err) {
+      console.warn('Clear all barcode requests error:', err.message);
     }
   }
 }

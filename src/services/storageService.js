@@ -186,6 +186,16 @@ class StorageService {
     const clean = String(idOrBarcode).trim();
     const updated = existing.filter((r) => r.id !== clean && String(r.barcode).trim() !== clean);
     this.setBarcodeRequests(updated);
+    try {
+      window.dispatchEvent(new Event('koperasi_barcode_request_change'));
+    } catch (e) {}
+  }
+
+  clearBarcodeRequests() {
+    this.setBarcodeRequests([]);
+    try {
+      window.dispatchEvent(new Event('koperasi_barcode_request_change'));
+    } catch (e) {}
   }
 
   completeBarcodeRequest(barcode) {

@@ -47,6 +47,7 @@ export const Navbar = ({ onNavigate, currentView, onToggleMobileMenu, isMobileMe
     pendingBarcodeRequestsCount,
     removeBarcodeRequest,
     completeBarcodeRequest,
+    clearAllBarcodeRequests,
   } = useProducts();
   const toast = useToast();
 
@@ -59,6 +60,17 @@ export const Navbar = ({ onNavigate, currentView, onToggleMobileMenu, isMobileMe
   const alertMenuRef = useRef(null);
 
   const totalAlertCount = (pendingBarcodeRequestsCount || 0) + (lowStockCount || 0);
+
+  const handleClearAllRequests = async () => {
+    if (window.confirm('Apakah Anda yakin ingin menghapus seluruh daftar permintaan barcode kasir?')) {
+      try {
+        await clearAllBarcodeRequests();
+        toast.success('Semua permintaan barcode kasir berhasil dibersihkan.');
+      } catch (err) {
+        toast.error('Gagal menghapus permintaan kasir.');
+      }
+    }
+  };
 
   // Auto-switch default tab if one category has items and other doesn't
   useEffect(() => {
@@ -196,8 +208,26 @@ export const Navbar = ({ onNavigate, currentView, onToggleMobileMenu, isMobileMe
 
                   {/* Tab 1 Content: Permintaan Barang Kasir */}
                   {activeAlertTab === 'requests' && (
-                    <div className="max-h-72 overflow-y-auto space-y-2 text-xs">
-                      {pendingBarcodeRequestsCount === 0 ? (
+                    <div className="space-y-2 text-xs">
+                      {pendingBarcodeRequestsCount > 0 && (
+                        <div className="flex items-center justify-between pb-1.5 px-1 border-b border-slate-100">
+                          <span className="text-[11px] text-slate-500 font-medium">
+                            {pendingBarcodeRequestsCount} barcode belum terdaftar
+                          </span>
+                          <button
+                            type="button"
+                            onClick={handleClearAllRequests}
+                            className="px-2 py-0.5 text-[11px] font-bold text-rose-600 hover:text-rose-700 hover:bg-rose-50 rounded-lg transition-colors flex items-center space-x-1 cursor-pointer"
+                            title="Hapus seluruh permintaan barcode kasir"
+                          >
+                            <Trash2 className="w-3 h-3" />
+                            <span>Hapus Semua</span>
+                          </button>
+                        </div>
+                      )}
+
+                      <div className="max-h-72 overflow-y-auto space-y-2">
+                        {pendingBarcodeRequestsCount === 0 ? (
                         <div className="text-center py-6 text-slate-400">
                           <CheckCircle2 className="w-8 h-8 text-emerald-400 mx-auto mb-1.5 opacity-60" />
                           <p className="font-semibold text-slate-600">Tidak ada permintaan barang baru</p>
@@ -250,7 +280,8 @@ export const Navbar = ({ onNavigate, currentView, onToggleMobileMenu, isMobileMe
                         ))
                       )}
                     </div>
-                  )}
+                  </div>
+                )}
 
                   {/* Tab 2 Content: Peringatan Stok Menipis */}
                   {activeAlertTab === 'stock' && (
