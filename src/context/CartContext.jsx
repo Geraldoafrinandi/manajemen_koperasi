@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useMemo } from 'react';
+import { createContext, useContext, useState, useMemo, useCallback } from 'react';
 import productService from '../services/productService';
 import storageService from '../services/storageService';
 import barcodeRequestService from '../services/barcodeRequestService';
@@ -12,15 +12,15 @@ export const CartProvider = ({ children }) => {
   const [unregisteredBarcode, setUnregisteredBarcode] = useState(null);
   const toast = useToast();
 
-  // Play a soft pleasant scanner beep sound using Web Audio API
-  const playBeep = () => {
+  // 1. Bungkus dengan useCallback
+  const playBeep = useCallback(() => {
     try {
       const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
       const osc = audioCtx.createOscillator();
       const gain = audioCtx.createGain();
 
       osc.type = 'sine';
-      osc.frequency.setValueAtTime(880, audioCtx.currentTime); // 880Hz (A5)
+      osc.frequency.setValueAtTime(880, audioCtx.currentTime);
       gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
       gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.12);
 
@@ -30,11 +30,12 @@ export const CartProvider = ({ children }) => {
       osc.start();
       osc.stop(audioCtx.currentTime + 0.12);
     } catch (e) {
-      // Audio context might be restricted before interaction
+      // Audio context might be restricted
     }
-  };
+  }, []); // Dependensi kosong
 
-  const addItem = (product, qtyToAdd = 1) => {
+  // 2. Gunakan useCallback untuk fungsi Add Item
+  const addItem = useCallback((product, qtyToAdd = 1) => {
     if (!product) return;
 
     if (product.stock <= 0) {
@@ -42,6 +43,7 @@ export const CartProvider = ({ children }) => {
       return false;
     }
 
+    // setItems dengan callback otomatis tahan terhadap race-condition
     setItems((prevItems) => {
       const existingIndex = prevItems.findIndex(
         (i) => i.productId === product.id || i.id === product.id
@@ -91,14 +93,13 @@ export const CartProvider = ({ children }) => {
 
     playBeep();
     return true;
-  };
+  }, [toast, playBeep]); // Dependensi ditambahkan
 
-  // Tambah item dari hasil scan Barcode atau SKU (dengan lookup backend / local)
-  const addItemByBarcode = async (barcodeQuery, productList = []) => {
+  // 3. Gunakan useCallback untuk addItemByBarcode
+  const addItemByBarcode = useCallback(async (barcodeQuery, productList = []) => {
     if (!barcodeQuery) return false;
     const cleanQuery = barcodeQuery.toString().trim();
 
-    // Coba cari dari productList yang aktif atau cache lokal terlebih dahulu (0ms instant lookup)
     const localProds = productList && productList.length > 0 ? productList : (storageService.getProducts() || []);
     let product = localProds.find(
       (p) =>
@@ -106,13 +107,10 @@ export const CartProvider = ({ children }) => {
         (p.sku && String(p.sku).trim().toLowerCase() === cleanQuery.toLowerCase())
     );
 
-    // Jika tidak ada di memory / local cache, cari langsung ke API backend /products/barcode/:barcode
     if (!product) {
       try {
         product = await productService.getByBarcode(cleanQuery);
-      } catch (err) {
-        // Ignored
-      }
+      } catch (err) { }
     }
 
     if (!product) {
@@ -120,14 +118,12 @@ export const CartProvider = ({ children }) => {
       const cashierName = storageService.getCurrentUser()?.name || 'Petugas Kasir';
       const cashierId = storageService.getCurrentUser()?.id;
 
-      // Simpan & broadcast lewat barcodeRequestService (Vite live sync & local storage)
       barcodeRequestService.create({
         barcode: cleanQuery,
         cashierName: cashierName,
         cashierId: cashierId,
       });
 
-      // Simpan juga ke database backend jika endpoint aktif
       productService
         .create({
           name: 'Permintaan Barang Baru (Kasir)',
@@ -139,9 +135,7 @@ export const CartProvider = ({ children }) => {
           category_id: 1,
           description: `Diminta oleh ${cashierName}`,
         })
-        .catch((err) => {
-          console.warn('Backend draft barcode sync:', err.message);
-        });
+        .catch(() => { });
 
       toast.warning(`Barcode "${cleanQuery}" belum terdaftar. Permintaan telah dikirim ke Admin.`);
       return { success: false, notFound: true, barcode: cleanQuery };
@@ -152,9 +146,14 @@ export const CartProvider = ({ children }) => {
       toast.success(`+1 ${product.name}`);
     }
     return { success: true, product };
-  };
+  }, [addItem, toast]);
 
-  const updateQuantity = (productId, newQty) => {
+  // 4. Pindahkan removeItem ke atas updateQuantity agar bisa digunakan
+  const removeItem = useCallback((productId) => {
+    setItems((prev) => prev.filter((i) => i.productId !== productId && i.id !== productId));
+  }, []);
+
+  const updateQuantity = useCallback((productId, newQty) => {
     const qty = Number(newQty);
     if (isNaN(qty) || qty <= 0) {
       removeItem(productId);
@@ -181,16 +180,12 @@ export const CartProvider = ({ children }) => {
         return item;
       })
     );
-  };
+  }, [removeItem, toast]);
 
-  const removeItem = (productId) => {
-    setItems((prev) => prev.filter((i) => i.productId !== productId && i.id !== productId));
-  };
-
-  const clearCart = () => {
+  const clearCart = useCallback(() => {
     setItems([]);
     setDiscount(0);
-  };
+  }, []);
 
   const total = useMemo(() => {
     return items.reduce((sum, item) => sum + item.subtotal, 0);

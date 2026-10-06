@@ -1,12 +1,13 @@
-import { useEffect, useRef } from 'react';
+import { useEffect } from 'react';
 import { useCart } from '../../context/CartContext';
+
+let globalBuffer = '';
+let globalLastKeyTime = Date.now();
+let globalLastScanTime = 0;
+let globalLastScannedBarcode = '';
 
 export const BarcodeHardwareListener = () => {
   const { addItemByBarcode } = useCart();
-  const bufferRef = useRef('');
-  const lastKeyTimeRef = useRef(Date.now());
-  const lastScanTimeRef = useRef(0);
-  const lastScannedBarcodeRef = useRef('');
 
   useEffect(() => {
     const handleKeyDown = (e) => {
@@ -15,20 +16,18 @@ export const BarcodeHardwareListener = () => {
         activeTag === 'input' || activeTag === 'textarea' || activeTag === 'select';
 
       const currentTime = Date.now();
-      const timeDiff = currentTime - lastKeyTimeRef.current;
-      lastKeyTimeRef.current = currentTime;
+      const timeDiff = currentTime - globalLastKeyTime;
+      globalLastKeyTime = currentTime;
 
-      // Jeda antar keystroke scanner fisik biasanya < 50ms, jika jeda > 150ms reset buffer
-      if (timeDiff > 150 && bufferRef.current.length > 0) {
-        bufferRef.current = '';
+      if (timeDiff > 150 && globalBuffer.length > 0) {
+        globalBuffer = '';
       }
 
       if (e.key === 'Enter') {
-        if (bufferRef.current.length >= 3) {
-          const barcodeScanned = bufferRef.current.trim();
-          bufferRef.current = '';
-          
-          // Hentikan default action dan cegah event Enter merambat ke shortcut POS / Form lain
+        if (globalBuffer.length >= 3) {
+          const barcodeScanned = globalBuffer.trim();
+          globalBuffer = '';
+
           e.preventDefault();
           e.stopPropagation();
           if (typeof e.stopImmediatePropagation === 'function') {
@@ -36,35 +35,33 @@ export const BarcodeHardwareListener = () => {
           }
 
           const now = Date.now();
-          // Proteksi Double-Scan: Jika barcode sama persis dibaca dalam waktu < 750ms, abaikan (mencegah double trigger hardware)
           if (
-            barcodeScanned === lastScannedBarcodeRef.current &&
-            now - lastScanTimeRef.current < 750
+            barcodeScanned === globalLastScannedBarcode &&
+            now - globalLastScanTime < 2000
           ) {
             return;
           }
-
-          // Throttle umum antrian scan (< 250ms)
-          if (now - lastScanTimeRef.current < 250) {
+          if (now - globalLastScanTime < 250) {
             return;
           }
 
-          lastScanTimeRef.current = now;
-          lastScannedBarcodeRef.current = barcodeScanned;
+          // Simpan waktu dan barcode terakhir yang berhasil discan
+          globalLastScanTime = now;
+          globalLastScannedBarcode = barcodeScanned;
 
+          // Masukkan ke keranjang
           addItemByBarcode(barcodeScanned);
         } else {
-          bufferRef.current = '';
+          globalBuffer = '';
         }
       } else if (e.key.length === 1 && !e.ctrlKey && !e.altKey && !e.metaKey) {
-        // Hanya rekam karakter jika kursor TIDAK sedang mengetik di dalam input/textarea
+        // Hanya tangkap karakter jika tidak sedang fokus di input text
         if (!isInputFocused) {
-          bufferRef.current += e.key;
+          globalBuffer += e.key;
         }
       }
     };
 
-    // Gunakan capture phase (true) agar barcode scanner tertangkap lebih dulu sebelum listener komponen lain
     window.addEventListener('keydown', handleKeyDown, true);
     return () => {
       window.removeEventListener('keydown', handleKeyDown, true);
