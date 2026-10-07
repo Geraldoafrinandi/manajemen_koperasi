@@ -241,6 +241,11 @@ class ProductService {
 
     return rawList.map(normalizeStockHistory);
   }
+
+  async deleteStockHistory(id) {
+    const res = await api.delete(`/stocks/histories/${id}`);
+    return res.data || res;
+  }
 }
 
 export const productService = new ProductService();
