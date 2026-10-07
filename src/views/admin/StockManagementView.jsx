@@ -40,6 +40,7 @@ export const StockManagementView = () => {
   const { user } = useAuth();
   const toast = useToast();
 
+  const [confirmDelete, setConfirmDelete] = useState(null); // { id }
   const [activeTab, setActiveTab] = useState('inventory');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('ALL');
@@ -220,6 +221,23 @@ export const StockManagementView = () => {
       resetForms();
     } catch (err) {
       toast.error(err.message || 'Gagal memproses pengeluaran barang.');
+    }
+  };
+
+  const handleDeleteHistory = (id) => {
+    setConfirmDelete({ id });
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!confirmDelete) return;
+    const { id } = confirmDelete;
+    setConfirmDelete(null);
+    try {
+      await productService.deleteStockHistory(id);
+      toast.success('Riwayat mutasi berhasil dihapus dan stok telah dikembalikan.');
+      refreshProducts();
+    } catch (err) {
+      toast.error(err.response?.data?.message || err.message || 'Gagal menghapus riwayat mutasi.');
     }
   };
 
@@ -515,12 +533,13 @@ export const StockManagementView = () => {
                   <th className="py-3 px-4 text-center">Jumlah</th>
                   <th className="py-3 px-4">Keterangan / Alasan</th>
                   <th className="py-3 px-4">Petugas</th>
+                  <th className="py-3 px-4 text-center">Aksi</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
                 {filteredMutations.length === 0 ? (
                   <tr>
-                    <td colSpan="6" className="text-center py-10 text-slate-400 text-xs italic">
+                    <td colSpan="7" className="text-center py-10 text-slate-400 text-xs italic">
                       Belum ada catatan keluar-masuk barang.
                     </td>
                   </tr>
@@ -610,6 +629,17 @@ export const StockManagementView = () => {
                             }
                             return s;
                           })()}
+                        </td>
+                        <td className="py-3.5 px-4 text-center">
+                          {!isCashierSale && (
+                            <button
+                              onClick={() => handleDeleteHistory(mut.id)}
+                              className="p-1.5 text-rose-500 hover:text-rose-700 hover:bg-rose-50 rounded-md transition-colors cursor-pointer"
+                              title="Hapus riwayat dan kembalikan stok"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          )}
                         </td>
                       </tr>
                     );
@@ -933,6 +963,41 @@ export const StockManagementView = () => {
               </div>
             </form>
           )}
+        </div>
+      </Modal>
+
+      {/* Modal Konfirmasi Hapus Riwayat Mutasi */}
+      <Modal
+        isOpen={!!confirmDelete}
+        onClose={() => setConfirmDelete(null)}
+        maxWidth="max-w-sm"
+        showCloseButton={false}
+        closeOnBackdrop={true}
+      >
+        <div className="text-center py-2">
+          <div className="w-14 h-14 mx-auto mb-4 rounded-2xl bg-rose-50 border border-rose-200 flex items-center justify-center">
+            <Trash2 className="w-7 h-7 text-rose-600" />
+          </div>
+          <h3 className="text-base font-extrabold text-slate-900 mb-1">Hapus Riwayat Mutasi?</h3>
+          <p className="text-xs text-slate-500 leading-relaxed mb-5">
+            Riwayat mutasi ini akan dihapus permanen dan stok barang akan otomatis <span className="font-bold text-slate-700">dikembalikan (di-rollback)</span> sesuai jumlah mutasi tersebut.
+          </p>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setConfirmDelete(null)}
+              className="flex-1 px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 rounded-xl text-xs font-bold transition-colors cursor-pointer"
+            >
+              Batal
+            </button>
+            <button
+              type="button"
+              onClick={handleConfirmDelete}
+              className="flex-1 px-4 py-2.5 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-xs font-extrabold transition-all shadow-xs active:scale-95 cursor-pointer"
+            >
+              Ya, Hapus & Rollback Stok
+            </button>
+          </div>
         </div>
       </Modal>
     </div>
