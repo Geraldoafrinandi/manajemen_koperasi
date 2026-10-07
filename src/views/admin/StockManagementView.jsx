@@ -3,6 +3,7 @@ import { useProducts } from '../../context/ProductContext';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
 import { formatRupiah, formatTanggal, formatThousand, parseThousand } from '../../utils/formatters';
+import productService from '../../services/productService';
 import Badge from '../../components/common/Badge';
 import Modal from '../../components/common/Modal';
 import Pagination from '../../components/common/Pagination';
@@ -36,6 +37,7 @@ export const StockManagementView = () => {
     adjustProductStock,
     lowStockCount,
     categories,
+    refreshProducts,
   } = useProducts();
   const { user } = useAuth();
   const toast = useToast();
