@@ -49,6 +49,20 @@ export const loadLogoImage = async () => {
 export const flattenTransactionsToItems = (transactions = []) => {
   const rows = [];
   (transactions || []).forEach((t) => {
+    const rawMethod = t.paymentMethod || t.payment_method || 'Cash';
+    let normMethod = 'Cash';
+    if (String(rawMethod).toLowerCase().includes('qris')) {
+      normMethod = 'QRIS';
+    } else if (
+      String(rawMethod).toLowerCase().includes('transfer') ||
+      String(rawMethod).toLowerCase().includes('bank') ||
+      String(rawMethod).toLowerCase().includes('tf')
+    ) {
+      normMethod = 'Transfer';
+    } else {
+      normMethod = 'Cash';
+    }
+
     const items = t.items || [];
     if (items.length === 0) {
       rows.push({
@@ -59,7 +73,7 @@ export const flattenTransactionsToItems = (transactions = []) => {
         unit: 'pcs',
         price: Number(t.grandTotal || 0),
         subtotal: Number(t.grandTotal || 0),
-        paymentMethod: t.paymentMethod || 'CASH',
+        paymentMethod: normMethod,
         cashierName: t.cashierName || 'Kasir',
       });
     } else {
@@ -75,7 +89,7 @@ export const flattenTransactionsToItems = (transactions = []) => {
           unit: it.unit || 'pcs',
           price,
           subtotal,
-          paymentMethod: t.paymentMethod || 'CASH',
+          paymentMethod: normMethod,
           cashierName: t.cashierName || 'Kasir',
         });
       });

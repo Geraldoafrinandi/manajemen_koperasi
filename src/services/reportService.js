@@ -10,6 +10,7 @@ class ReportService {
       ...(params.endDate ? { end_date: params.endDate } : {}),
       ...(params.month ? { month: params.month } : {}),
       ...(params.year ? { year: params.year } : {}),
+      ...(params.paymentMethod && params.paymentMethod !== 'ALL' ? { payment_method: params.paymentMethod } : {}),
     };
 
     const res = await api.get('/reports/sales', { params: query });
@@ -42,7 +43,7 @@ class ReportService {
   }
 
   // Laporan Bulanan Terpadu (menggabungkan data penjualan & laba untuk rekap Kop Surat)
-  async generateMonthlyReport({ year, month, startDate, endDate }) {
+  async generateMonthlyReport({ year, month, startDate, endDate, paymentMethod }) {
     let start = startDate;
     let end = endDate;
 
@@ -53,7 +54,7 @@ class ReportService {
 
     try {
       const [salesRes, profitRes] = await Promise.allSettled([
-        this.getSalesReport({ startDate: start, endDate: end }),
+        this.getSalesReport({ startDate: start, endDate: end, paymentMethod }),
         this.getProfitReport({ startDate: start, endDate: end }),
       ]);
 

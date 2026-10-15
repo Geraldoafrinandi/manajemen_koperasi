@@ -30,6 +30,10 @@ import {
   ShoppingBag,
   Receipt,
   TrendingUp,
+  QrCode,
+  CreditCard,
+  Layers,
+  List,
 } from 'lucide-react';
 
 const MONTH_NAMES = [
@@ -98,21 +102,25 @@ export const MonthlyReportsView = () => {
     getLocalYYYYMMDD(new Date(currentYear, currentMonth, 1))
   );
   const [endDate, setEndDate] = useState(todayStr);
+  const [paymentMethodFilter, setPaymentMethodFilter] = useState('ALL');
+  const [monthlyViewTab, setMonthlyViewTab] = useState('RECAP');
   const [isPreviewModalOpen, setIsPreviewModalOpen] = useState(false);
   const [reportData, setReportData] = useState(DEFAULT_REPORT_DATA);
-  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     let isMounted = true;
-    setLoading(true);
 
-    let params = {};
+    let params;
     if (filterMode === 'DAILY') {
       params = { startDate: selectedDate, endDate: selectedDate };
     } else if (filterMode === 'MONTH') {
       params = { year: selectedYear, month: selectedMonth };
     } else {
       params = { startDate, endDate };
+    }
+
+    if (paymentMethodFilter !== 'ALL') {
+      params.paymentMethod = paymentMethodFilter;
     }
 
     reportService
@@ -124,15 +132,12 @@ export const MonthlyReportsView = () => {
       })
       .catch((err) => {
         console.warn('Failed to load report:', err);
-      })
-      .finally(() => {
-        if (isMounted) setLoading(false);
       });
 
     return () => {
       isMounted = false;
     };
-  }, [filterMode, selectedDate, selectedYear, selectedMonth, startDate, endDate]);
+  }, [filterMode, selectedDate, selectedYear, selectedMonth, startDate, endDate, paymentMethodFilter]);
 
   const periodLabel = useMemo(() => {
     if (filterMode === 'DAILY') {
@@ -146,26 +151,116 @@ export const MonthlyReportsView = () => {
 
   const isDaily = filterMode === 'DAILY';
 
+  const filteredReportData = useMemo(() => {
+    if (!reportData) return DEFAULT_REPORT_DATA;
+    if (paymentMethodFilter === 'ALL') return reportData;
+
+    const targetMethod = paymentMethodFilter.toUpperCase();
+    const rawTransactions = reportData.transactions || [];
+
+    const matchedTransactions = rawTransactions.filter((t) => {
+      const pm = String(t.paymentMethod || t.payment_method || 'CASH').toUpperCase();
+      if (targetMethod === 'CASH') {
+        return pm === 'CASH' || pm === 'TUNAI';
+      }
+      return pm === targetMethod;
+    });
+
+    const totalRevenue = matchedTransactions.reduce(
+      (sum, t) => sum + Number(t.grandTotal || t.total || 0),
+      0
+    );
+    const totalCost = matchedTransactions.reduce(
+      (sum, t) => sum + Number(t.totalCost || 0),
+      0
+    );
+    const netProfit = totalRevenue - totalCost;
+    const profitMargin =
+      totalRevenue > 0 ? ((netProfit / totalRevenue) * 100).toFixed(1) : '0.0';
+    const totalItemsSold = matchedTransactions.reduce(
+      (sum, t) =>
+        sum + (t.items?.reduce((s, i) => s + (Number(i.quantity) || 0), 0) || 0),
+      0
+    );
+
+    const paymentMethodsSummary = {
+      Cash: { count: 0, total: 0 },
+      QRIS: { count: 0, total: 0 },
+      Transfer: { count: 0, total: 0 },
+    };
+    matchedTransactions.forEach((t) => {
+      const pm = String(t.paymentMethod || t.payment_method || 'Cash').toUpperCase();
+      const amount = Number(t.grandTotal || t.total || 0);
+      if (pm === 'QRIS') {
+        paymentMethodsSummary.QRIS.count += 1;
+        paymentMethodsSummary.QRIS.total += amount;
+      } else if (pm === 'TRANSFER') {
+        paymentMethodsSummary.Transfer.count += 1;
+        paymentMethodsSummary.Transfer.total += amount;
+      } else {
+        paymentMethodsSummary.Cash.count += 1;
+        paymentMethodsSummary.Cash.total += amount;
+      }
+    });
+
+    return {
+      ...reportData,
+      summary: {
+        ...reportData.summary,
+        totalRevenue,
+        totalCost,
+        netProfit,
+        profitMargin,
+        totalTransactions: matchedTransactions.length,
+        totalItemsSold,
+        avgTransactionValue:
+          matchedTransactions.length > 0
+            ? Math.round(totalRevenue / matchedTransactions.length)
+            : 0,
+      },
+      transactions: matchedTransactions,
+      paymentMethods: paymentMethodsSummary,
+    };
+  }, [reportData, paymentMethodFilter]);
+
   const itemRows = useMemo(
-    () => flattenTransactionsToItems(reportData.transactions || []),
-    [reportData.transactions]
+    () => flattenTransactionsToItems(filteredReportData.transactions || []),
+    [filteredReportData.transactions]
   );
 
   const dailyRecapRows = useMemo(
-    () => aggregateMonthlyDailySales(reportData.transactions || []),
-    [reportData.transactions]
+    () => aggregateMonthlyDailySales(filteredReportData.transactions || []),
+    [filteredReportData.transactions]
   );
 
   const itemRowsPagination = usePagination({
     items: itemRows,
     initialPageSize: 15,
-    resetDeps: [filterMode, selectedDate, selectedYear, selectedMonth, startDate, endDate],
+    resetDeps: [
+      filterMode,
+      selectedDate,
+      selectedYear,
+      selectedMonth,
+      startDate,
+      endDate,
+      paymentMethodFilter,
+      monthlyViewTab,
+    ],
   });
 
   const dailyRecapPagination = usePagination({
     items: dailyRecapRows,
     initialPageSize: 15,
-    resetDeps: [filterMode, selectedDate, selectedYear, selectedMonth, startDate, endDate],
+    resetDeps: [
+      filterMode,
+      selectedDate,
+      selectedYear,
+      selectedMonth,
+      startDate,
+      endDate,
+      paymentMethodFilter,
+      monthlyViewTab,
+    ],
   });
 
   const totalDailyTransactions = useMemo(
@@ -185,40 +280,37 @@ export const MonthlyReportsView = () => {
 
   const totalOmset = useMemo(() => {
     return (
-      reportData.summary?.totalRevenue ||
-      (isDaily
+      filteredReportData.summary?.totalRevenue ??
+      (isDaily || monthlyViewTab === 'ITEMS'
         ? itemRows.reduce((sum, r) => sum + (r.subtotal || 0), 0)
         : dailyRecapRows.reduce((sum, r) => sum + r.totalRevenue, 0))
     );
-  }, [reportData.summary, isDaily, itemRows, dailyRecapRows]);
+  }, [filteredReportData.summary, isDaily, monthlyViewTab, itemRows, dailyRecapRows]);
 
-  const summary = reportData.summary || {};
+  const summary = filteredReportData.summary || {};
   const totalCost = Number(summary.totalCost || 0);
-  const netProfit = Number(summary.netProfit || totalOmset - totalCost);
+  const netProfit = Number(summary.netProfit ?? (totalOmset - totalCost));
   const margin =
     summary.profitMargin ||
     (totalOmset > 0 ? ((netProfit / totalOmset) * 100).toFixed(1) : '0.0');
 
   const { cashTotal, qrisTotal, transferTotal } = useMemo(() => {
     let cTotal = Number(
-      reportData.paymentMethods?.Cash?.total ??
-      reportData.paymentMethods?.CASH?.total ??
-      0
+      filteredReportData.paymentMethods?.Cash?.total ??
+        filteredReportData.paymentMethods?.CASH?.total ??
+        0
     );
-    let qTotal = Number(
-      reportData.paymentMethods?.QRIS?.total ??
-      0
-    );
+    let qTotal = Number(filteredReportData.paymentMethods?.QRIS?.total ?? 0);
     let tTotal = Number(
-      reportData.paymentMethods?.Transfer?.total ??
-      reportData.paymentMethods?.TRANSFER?.total ??
-      0
+      filteredReportData.paymentMethods?.Transfer?.total ??
+        filteredReportData.paymentMethods?.TRANSFER?.total ??
+        0
     );
 
-    const transactions = reportData.transactions || [];
+    const transactions = filteredReportData.transactions || [];
     if (cTotal === 0 && qTotal === 0 && tTotal === 0 && transactions.length > 0) {
       transactions.forEach((t) => {
-        const pm = String(t.paymentMethod || 'CASH').toUpperCase();
+        const pm = String(t.paymentMethod || t.payment_method || 'CASH').toUpperCase();
         const amount = Number(t.grandTotal || t.total || 0);
         if (pm === 'CASH' || pm === 'TUNAI') {
           cTotal += amount;
@@ -233,22 +325,52 @@ export const MonthlyReportsView = () => {
     }
 
     return { cashTotal: cTotal, qrisTotal: qTotal, transferTotal: tTotal };
-  }, [reportData.paymentMethods, reportData.transactions]);
+  }, [filteredReportData.paymentMethods, filteredReportData.transactions]);
+
+  const renderPaymentMethodBadge = (method) => {
+    const norm = String(method || 'Cash').toUpperCase();
+    if (norm === 'QRIS') {
+      return (
+        <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-bold bg-blue-50 text-blue-700 border border-blue-200">
+          QRIS
+        </span>
+      );
+    }
+    if (norm === 'TRANSFER') {
+      return (
+        <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-bold bg-purple-50 text-purple-700 border border-purple-200">
+          TRANSFER
+        </span>
+      );
+    }
+    return (
+      <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+        TUNAI
+      </span>
+    );
+  };
 
   const handlePrintOfficial = () => {
     window.print();
   };
 
+  const activePeriodLabelWithFilter = useMemo(() => {
+    if (paymentMethodFilter !== 'ALL') {
+      return `${periodLabel} (Metode: ${paymentMethodFilter})`;
+    }
+    return periodLabel;
+  }, [periodLabel, paymentMethodFilter]);
+
   const handleExportPdf = async () => {
     try {
       await exportReportToPdf(
-        reportData,
+        filteredReportData,
         coopProfile,
-        periodLabel,
+        activePeriodLabelWithFilter,
         isDaily ? 'DAILY' : 'MONTHLY'
       );
-      toast.success(`Laporan PDF periode ${periodLabel} berhasil didownload.`);
-    } catch (e) {
+      toast.success(`Laporan PDF periode ${activePeriodLabelWithFilter} berhasil didownload.`);
+    } catch {
       toast.error('Gagal membuat file PDF laporan.');
     }
   };
@@ -256,9 +378,9 @@ export const MonthlyReportsView = () => {
   const handleExportExcel = () => {
     try {
       exportReportToExcel(
-        reportData,
+        filteredReportData,
         coopProfile,
-        periodLabel,
+        activePeriodLabelWithFilter,
         isDaily ? 'DAILY' : 'MONTHLY'
       );
       toast.success(`Laporan Excel (${isDaily ? 'Harian' : 'Bulanan'}) berhasil didownload.`);
@@ -429,6 +551,73 @@ export const MonthlyReportsView = () => {
             </div>
           )}
         </div>
+
+        {/* Filter Metode Pembayaran & Tab Tampilan */}
+        <div className="pt-3 border-t border-slate-100 flex flex-col md:flex-row md:items-center justify-between gap-3">
+          <div className="flex items-center space-x-2 flex-wrap gap-y-2">
+            <span className="text-xs font-bold uppercase text-slate-500">Metode Pembayaran:</span>
+            <div className="flex bg-slate-100 p-1 rounded-xl border border-slate-200 flex-wrap gap-1">
+              {[
+                { id: 'ALL', label: 'Semua Metode', icon: Layers },
+                { id: 'Cash', label: 'Tunai (Cash)', icon: Banknote },
+                { id: 'QRIS', label: 'QRIS', icon: QrCode },
+                { id: 'Transfer', label: 'Transfer Bank', icon: CreditCard },
+              ].map((m) => {
+                const Icon = m.icon;
+                const isSelected = paymentMethodFilter === m.id;
+                return (
+                  <button
+                    key={m.id}
+                    type="button"
+                    onClick={() => setPaymentMethodFilter(m.id)}
+                    className={`flex items-center space-x-1.5 px-3 py-1.5 text-xs font-bold rounded-lg transition-all cursor-pointer ${
+                      isSelected
+                        ? 'bg-emerald-600 text-white shadow-xs'
+                        : 'text-slate-600 hover:text-slate-900 hover:bg-white/60'
+                    }`}
+                  >
+                    <Icon className="w-3.5 h-3.5" />
+                    <span>{m.label}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {!isDaily && (
+            <div className="flex items-center space-x-2 flex-wrap gap-y-2">
+              <span className="text-xs font-bold uppercase text-slate-500">Tampilan Data:</span>
+              <div className="flex bg-slate-100 p-1 rounded-xl border border-slate-200">
+                <button
+                  type="button"
+                  onClick={() => setMonthlyViewTab('RECAP')}
+                  className={`flex items-center space-x-1.5 px-3 py-1.5 text-xs font-bold rounded-lg transition-all cursor-pointer ${
+                    monthlyViewTab === 'RECAP'
+                      ? 'bg-emerald-600 text-white shadow-xs'
+                      : 'text-slate-600 hover:text-slate-900'
+                  }`}
+                  title="Rekapitulasi total penjualan per hari kalender"
+                >
+                  <CalendarDays className="w-3.5 h-3.5" />
+                  <span>Rekap per Tanggal</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setMonthlyViewTab('ITEMS')}
+                  className={`flex items-center space-x-1.5 px-3 py-1.5 text-xs font-bold rounded-lg transition-all cursor-pointer ${
+                    monthlyViewTab === 'ITEMS'
+                      ? 'bg-emerald-600 text-white shadow-xs'
+                      : 'text-slate-600 hover:text-slate-900'
+                  }`}
+                  title="Daftar rincian seluruh barang terjual dalam periode ini"
+                >
+                  <List className="w-3.5 h-3.5" />
+                  <span>Rincian Semua Barang</span>
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
       </div>
 
       {isDaily ? (
@@ -443,7 +632,7 @@ export const MonthlyReportsView = () => {
                 {formatRupiah(totalOmset)}
               </h3>
               <p className="text-[11px] text-slate-400 mt-1">
-                Dari {reportData.summary.totalTransactions} transaksi ({itemRows.length} baris item)
+                Dari {filteredReportData.summary.totalTransactions} transaksi ({itemRows.length} baris item)
               </p>
             </div>
           </div>
@@ -470,7 +659,7 @@ export const MonthlyReportsView = () => {
             </div>
             <div className="mt-2">
               <h3 className="text-xl font-extrabold text-slate-900">
-                {formatRupiah(reportData.summary.avgTransactionValue)}
+                {formatRupiah(filteredReportData.summary.avgTransactionValue)}
               </h3>
               <p className="text-[11px] text-slate-400 mt-1">
                 Nilai rata-rata per transaksi
@@ -486,15 +675,15 @@ export const MonthlyReportsView = () => {
             <div className="mt-1 space-y-0.5 text-[11px] text-slate-600">
               <div className="flex justify-between">
                 <span>Tunai:</span>
-                <span className="font-bold">{formatRupiah(reportData.paymentMethods?.Cash?.total || 0)}</span>
+                <span className="font-bold">{formatRupiah(cashTotal)}</span>
               </div>
               <div className="flex justify-between">
                 <span>QRIS:</span>
-                <span className="font-bold">{formatRupiah(reportData.paymentMethods?.QRIS?.total || 0)}</span>
+                <span className="font-bold">{formatRupiah(qrisTotal)}</span>
               </div>
               <div className="flex justify-between">
                 <span>Transfer:</span>
-                <span className="font-bold">{formatRupiah(reportData.paymentMethods?.Transfer?.total || 0)}</span>
+                <span className="font-bold">{formatRupiah(transferTotal)}</span>
               </div>
             </div>
           </div>
@@ -569,30 +758,39 @@ export const MonthlyReportsView = () => {
             <h3 className="text-sm font-bold text-slate-900">
               {isDaily
                 ? 'Daftar Rincian Barang Terjual Harian'
+                : monthlyViewTab === 'ITEMS'
+                ? 'Daftar Rincian Seluruh Barang Terjual'
                 : 'Rekapitulasi Penjualan Harian per Tanggal'}
             </h3>
             <p className="text-xs text-slate-500">
-              {isDaily
+              {isDaily || monthlyViewTab === 'ITEMS'
                 ? 'Format: NO, No Faktur, Waktu, Rincian Barang, QTY, Metode, Kasir, Subtotal'
-                : 'Format: NO, Tanggal Penjualan, Jml Transaksi, Total Barang, Metode, Petugas Kasir, Total Omset'}
+                : 'Format: NO, Tanggal Penjualan, Jml Transaksi, Total Barang, Metode Dominan, Petugas Kasir, Total Omset'}
             </p>
           </div>
-          <span className="text-xs font-bold text-slate-700 bg-slate-100 px-3 py-1 rounded-lg border border-slate-200 self-start sm:self-auto">
-            {isDaily
-              ? `Total: ${itemRows.length} Barang`
-              : `Total: ${dailyRecapRows.length} Hari Aktif (${totalDailyTransactions} Transaksi)`}
-          </span>
+          <div className="flex items-center space-x-2 flex-wrap gap-2">
+            {paymentMethodFilter !== 'ALL' && (
+              <span className="text-xs font-bold text-emerald-800 bg-emerald-50 px-2.5 py-1 rounded-lg border border-emerald-200">
+                Filter: {paymentMethodFilter}
+              </span>
+            )}
+            <span className="text-xs font-bold text-slate-700 bg-slate-100 px-3 py-1 rounded-lg border border-slate-200 self-start sm:self-auto">
+              {isDaily || monthlyViewTab === 'ITEMS'
+                ? `Total: ${itemRows.length} Barang`
+                : `Total: ${dailyRecapRows.length} Hari Aktif (${totalDailyTransactions} Transaksi)`}
+            </span>
+          </div>
         </div>
 
         <div className="overflow-x-auto">
-          {isDaily ? (
+          {isDaily || monthlyViewTab === 'ITEMS' ? (
             <div>
               <table className="w-full text-left text-xs sm:text-sm">
                 <thead className="bg-slate-50 text-slate-600 uppercase tracking-wider text-[11px] font-bold border-y border-slate-200">
                   <tr>
                     <th className="py-3 px-3 w-12 text-center">NO</th>
                     <th className="py-3 px-3">No. Faktur</th>
-                    <th className="py-3 px-3">Waktu</th>
+                    <th className="py-3 px-3">{isDaily ? 'Waktu' : 'Tanggal & Waktu'}</th>
                     <th className="py-3 px-3 min-w-[220px]">Rincian Barang</th>
                     <th className="py-3 px-3 text-center">QTY</th>
                     <th className="py-3 px-3 text-center">Metode</th>
@@ -604,7 +802,8 @@ export const MonthlyReportsView = () => {
                   {itemRows.length === 0 ? (
                     <tr>
                       <td colSpan="8" className="text-center py-10 text-slate-400">
-                        Tidak ada barang terjual pada periode {periodLabel}.
+                        Tidak ada barang terjual pada periode {periodLabel}{' '}
+                        {paymentMethodFilter !== 'ALL' ? `dengan metode ${paymentMethodFilter}` : ''}.
                       </td>
                     </tr>
                   ) : (
@@ -625,8 +824,8 @@ export const MonthlyReportsView = () => {
                         <td className="py-3 px-3 text-center font-mono font-semibold text-slate-700 whitespace-nowrap">
                           {r.quantity} {r.unit || 'pcs'}
                         </td>
-                        <td className="py-3 px-3 text-center whitespace-nowrap font-bold text-slate-800">
-                          {r.paymentMethod || 'CASH'}
+                        <td className="py-3 px-3 text-center whitespace-nowrap">
+                          {renderPaymentMethodBadge(r.paymentMethod)}
                         </td>
                         <td className="py-3 px-3 text-slate-600 truncate max-w-[120px]">
                           {r.cashierName || 'Kasir'}
@@ -664,6 +863,22 @@ export const MonthlyReportsView = () => {
           ) : (
             <div className="space-y-6">
               <div>
+                <div className="mb-3 p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-600 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                  <div className="flex items-center space-x-2">
+                    <CalendarDays className="w-4 h-4 text-emerald-600 shrink-0" />
+                    <span>
+                      Menampilkan ringkasan total penjualan <strong>per tanggal kalender</strong> (maksimal 31 hari per bulan).
+                    </span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setMonthlyViewTab('ITEMS')}
+                    className="text-emerald-700 hover:text-emerald-800 font-bold underline cursor-pointer text-left sm:text-right shrink-0"
+                  >
+                    Buka Rincian Seluruh Barang ({itemRows.length} item) &rarr;
+                  </button>
+                </div>
+
                 <table className="w-full text-left text-xs sm:text-sm">
                   <thead className="bg-slate-50 text-slate-600 uppercase tracking-wider text-[11px] font-bold border-y border-slate-200">
                     <tr>
@@ -671,7 +886,7 @@ export const MonthlyReportsView = () => {
                       <th className="py-3 px-3">Tanggal Penjualan</th>
                       <th className="py-3 px-3 text-center">Jml Transaksi</th>
                       <th className="py-3 px-3 text-center">Total Barang</th>
-                      <th className="py-3 px-3 text-center">Metode</th>
+                      <th className="py-3 px-3 text-center">Metode Dominan</th>
                       <th className="py-3 px-3">Petugas Kasir</th>
                       <th className="py-3 px-3 text-right">Total Omset</th>
                     </tr>
@@ -680,7 +895,8 @@ export const MonthlyReportsView = () => {
                     {dailyRecapRows.length === 0 ? (
                       <tr>
                         <td colSpan="7" className="text-center py-10 text-slate-400">
-                          Tidak ada transaksi penjualan pada bulan {periodLabel}.
+                          Tidak ada transaksi penjualan pada bulan {periodLabel}{' '}
+                          {paymentMethodFilter !== 'ALL' ? `dengan metode ${paymentMethodFilter}` : ''}.
                         </td>
                       </tr>
                     ) : (
@@ -698,8 +914,8 @@ export const MonthlyReportsView = () => {
                           <td className="py-3 px-3 text-center font-mono text-slate-700 whitespace-nowrap">
                             {r.totalQty} pcs
                           </td>
-                          <td className="py-3 px-3 text-center whitespace-nowrap font-bold text-slate-800">
-                            {r.topPaymentMethod}
+                          <td className="py-3 px-3 text-center whitespace-nowrap">
+                            {renderPaymentMethodBadge(r.topPaymentMethod)}
                           </td>
                           <td className="py-3 px-3 text-slate-600 truncate max-w-[160px]">
                             {r.cashiers}
@@ -1036,9 +1252,9 @@ export const MonthlyReportsView = () => {
       <PdfPreviewModal
         isOpen={isPreviewModalOpen}
         onClose={() => setIsPreviewModalOpen(false)}
-        reportData={reportData}
+        reportData={filteredReportData}
         coopProfile={coopProfile}
-        periodLabel={periodLabel}
+        periodLabel={activePeriodLabelWithFilter}
         reportType={isDaily ? 'DAILY' : 'MONTHLY'}
         onDownload={handleExportPdf}
         onExportExcel={handleExportExcel}

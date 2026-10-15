@@ -119,7 +119,7 @@ export const Pagination = ({
       </div>
 
       {/* Kontrol Navigasi Halaman */}
-      {totalPages > 1 && (
+      {totalPages > 1 ? (
         <div className="flex items-center space-x-1 justify-center w-full sm:w-auto">
           {/* First Page Button */}
           {!compact && (
@@ -216,6 +216,10 @@ export const Pagination = ({
               <ChevronsRight className="w-3.5 h-3.5" />
             </button>
           )}
+        </div>
+      ) : (
+        <div className="text-[11px] font-medium text-slate-400 italic">
+          Halaman 1 dari 1 (Semua data ditampilkan)
         </div>
       )}
     </div>
