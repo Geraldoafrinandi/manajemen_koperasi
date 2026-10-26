@@ -61,7 +61,7 @@ api.interceptors.response.use(
         window.dispatchEvent(new CustomEvent('koperasi_unauthorized'));
       }
     } else if (error.request) {
-      message = 'Tidak dapat terhubung ke server backend (http://localhost:3000). Pastikan backend berjalan.';
+      message = `Tidak dapat terhubung ke server backend (${API_BASE_URL}). Pastikan backend berjalan.`;
     } else {
       message = error.message;
     }
